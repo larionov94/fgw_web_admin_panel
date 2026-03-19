@@ -6,4 +6,5 @@
 .idea
 logs
 *.json
+*.env
 .env

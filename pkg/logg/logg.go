@@ -159,6 +159,7 @@ func (l *Logger) LogWf(skipNumOfStack int, format string, args ...interface{}) {
 //   - errMsg: объект ошибки;
 //   - skipNumOfStack: кол-во пропускаемых кадров стека.
 func (l *Logger) LogE(message string, errMsg error, skipNumOfStack int) {
+	fmt.Println(time.Now().Format(time.DateTime), levelError, message, errMsg)
 	l.loggCustom(levelError, message, errMsg, nil, skipNumOfStack)
 }
 
@@ -189,6 +190,7 @@ func (l *Logger) LogHttpI(statusCode int, methodHTTP, url, message string, skipN
 		MethodHTTP: methodHTTP,
 		URL:        url,
 	}
+	fmt.Println(time.Now().Format(time.DateTime), levelInfo, message, responseEntry)
 	l.loggCustom(levelInfo, message, nil, responseEntry, skipNumOfStack)
 }
 
@@ -227,6 +229,7 @@ func (l *Logger) LogHttpE(statusCode int, methodHTTP, url, message string, errMs
 		MethodHTTP: methodHTTP,
 		URL:        url,
 	}
+	fmt.Println(time.Now().Format(time.DateTime), levelError, message, errMsg, responseEntry)
 	l.loggCustom(levelError, message, errMsg, responseEntry, skipNumOfStack)
 }
 
