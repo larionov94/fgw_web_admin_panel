@@ -41,7 +41,13 @@ func main() {
 			log.Fatalf("%s: %v", msg.ES5002, err)
 		}
 	}()
+
+	time.Sleep(time.Second)
+	logger.LogIf(skipNofS, "%s: %s", msg.IS2001, os.Getenv("PORT"))
+
 	<-quit
+
+	logger.LogWf(skipNofS, "%s", msg.WL4002)
 
 	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer shutdownCancel()

@@ -114,6 +114,19 @@ func (l *Logger) loggCustom(levelLog LogLevel, msgEntry string, errMsg error, re
 //   - message: текст информационного сообщения;
 //   - skipNumOfStack: кол-во пропускаемых кадров стека.
 func (l *Logger) LogI(message string, skipNumOfStack int) {
+	fmt.Println(time.Now().Format(time.DateTime), levelInfo, message)
+	l.loggCustom(levelInfo, message, nil, nil, skipNumOfStack)
+}
+
+// LogIf логирует информационное сообщение с указанием уровнем детализации стека с форматированием.
+//
+// Параметры:
+//   - skipNumOfStack: количество пропускаемых кадров стека;
+//   - format: строка формата;
+//   - args: аргументы для форматирования.
+func (l *Logger) LogIf(skipNumOfStack int, format string, args ...interface{}) {
+	message := fmt.Sprintf(format, args...)
+	fmt.Println(time.Now().Format(time.DateTime), levelInfo, message)
 	l.loggCustom(levelInfo, message, nil, nil, skipNumOfStack)
 }
 
@@ -123,6 +136,19 @@ func (l *Logger) LogI(message string, skipNumOfStack int) {
 //   - message: текст предупреждающего сообщения;
 //   - skipNumOfStack: кол-во пропускаемых кадров стека.
 func (l *Logger) LogW(message string, skipNumOfStack int) {
+	fmt.Println(time.Now().Format(time.DateTime), levelWarn, message)
+	l.loggCustom(levelWarn, message, nil, nil, skipNumOfStack)
+}
+
+// LogWf логирует предупреждающие сообщения с указанием уровнем детализации стека с форматированием.
+//
+// Параметры:
+//   - skipNumOfStack: количество пропускаемых кадров стека;
+//   - format: строка формата;
+//   - args: аргументы для форматирования.
+func (l *Logger) LogWf(skipNumOfStack int, format string, args ...interface{}) {
+	message := fmt.Sprintf(format, args...)
+	fmt.Println(time.Now().Format(time.DateTime), levelWarn, message)
 	l.loggCustom(levelWarn, message, nil, nil, skipNumOfStack)
 }
 
@@ -133,6 +159,19 @@ func (l *Logger) LogW(message string, skipNumOfStack int) {
 //   - errMsg: объект ошибки;
 //   - skipNumOfStack: кол-во пропускаемых кадров стека.
 func (l *Logger) LogE(message string, errMsg error, skipNumOfStack int) {
+	l.loggCustom(levelError, message, errMsg, nil, skipNumOfStack)
+}
+
+// LogEf логирует сообщение об ошибки с указанным уровнем детализации стека с форматированием.
+//
+// Параметры:
+//   - skipNumOfStack: кол-во пропускаемых кадров стека;
+//   - errMsg: объект ошибки;
+//   - format: строка формата;
+//   - args: аргументы для форматирования.
+func (l *Logger) LogEf(skipNumOfStack int, errMsg error, format string, args ...interface{}) {
+	message := fmt.Sprintf(format, args...)
+	fmt.Println(time.Now().Format(time.DateTime), levelError, message, errMsg)
 	l.loggCustom(levelError, message, errMsg, nil, skipNumOfStack)
 }
 
@@ -153,6 +192,26 @@ func (l *Logger) LogHttpI(statusCode int, methodHTTP, url, message string, skipN
 	l.loggCustom(levelInfo, message, nil, responseEntry, skipNumOfStack)
 }
 
+// LogHttpIf логирует успешный HTTP-запрос с форматированием.
+//
+// Параметры:
+//   - statusCode: HTTP статус ответа (< 400);
+//   - methodHTTP: HTTP методы (PUT, POST, DELETE, GET);
+//   - url: запрашиваемый url;
+//   - skipNumOfStack: кол-во пропускаемых кадров стека.
+//   - format: строка формата;
+//   - args: аргументы для форматирования.
+func (l *Logger) LogHttpIf(statusCode int, methodHTTP, url string, skipNumOfStack int, format string, args ...interface{}) {
+	message := fmt.Sprintf(format, args...)
+	responseEntry := &ResponseEntry{
+		StatusCode: statusCode,
+		MethodHTTP: methodHTTP,
+		URL:        url,
+	}
+	fmt.Println(time.Now().Format(time.DateTime), levelInfo, message, responseEntry)
+	l.loggCustom(levelInfo, message, nil, responseEntry, skipNumOfStack)
+}
+
 // LogHttpE логирует ошибочный HTTP-запрос.
 //
 // Параметры:
@@ -168,6 +227,27 @@ func (l *Logger) LogHttpE(statusCode int, methodHTTP, url, message string, errMs
 		MethodHTTP: methodHTTP,
 		URL:        url,
 	}
+	l.loggCustom(levelError, message, errMsg, responseEntry, skipNumOfStack)
+}
+
+// LogHttpEf логирует ошибочный HTTP-запрос с форматированием.
+//
+// Параметры:
+//   - statusCode: HTTP статус ответа (>= 400);
+//   - methodHTTP: HTTP методы (PUT, POST, DELETE, GET);
+//   - url: запрашиваемый url;
+//   - errMsg: объект ошибки (может быть nil);
+//   - skipNumOfStack: кол-во пропускаемых кадров стека;
+//   - format: строка формата;
+//   - args: аргументы для форматирования.
+func (l *Logger) LogHttpEf(statusCode int, methodHTTP, url string, errMsg error, skipNumOfStack int, format string, args ...interface{}) {
+	message := fmt.Sprintf(format, args...)
+	responseEntry := &ResponseEntry{
+		StatusCode: statusCode,
+		MethodHTTP: methodHTTP,
+		URL:        url,
+	}
+	fmt.Println(time.Now().Format(time.DateTime), levelError, message, errMsg, responseEntry)
 	l.loggCustom(levelError, message, errMsg, responseEntry, skipNumOfStack)
 }
 

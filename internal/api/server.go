@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fgw_web_admin_panel/pkg/logg"
 	"fgw_web_admin_panel/pkg/msg"
-	"fmt"
 	"net/http"
 	"os"
 	"time"
@@ -56,15 +55,15 @@ func NewServer(addr string, handler http.Handler, logger *logg.Logger) *Server {
 //   - Закрываем канал;
 //   - Ожидаем либо отмены контекста, либо ошибки от сервера.
 func (s *Server) StartServer(ctx context.Context) error {
-	s.logger.LogI(fmt.Sprintf("%s: %s", msg.IS2000, os.Getenv("PORT")), skipNofS)
+	s.logger.LogIf(skipNofS, "%s: %s", msg.IS2000, os.Getenv("PORT"))
 
 	errCh := make(chan error, 1)
 
 	go func() {
 		if err := s.httpServer.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-			s.logger.LogE(fmt.Sprintf("%s: %s", msg.ES5000, os.Getenv("PORT")), err, skipNofS)
+			s.logger.LogEf(skipNofS, err, "%s: %s", msg.ES5000, os.Getenv("PORT"))
 
-			errCh <- fmt.Errorf("%s: %s. %w", msg.ES5000, os.Getenv("PORT"), err)
+			errCh <- err
 		}
 		close(errCh)
 	}()
@@ -88,11 +87,12 @@ func (s *Server) StartServer(ctx context.Context) error {
 func (s *Server) StopServer(ctx context.Context) error {
 	err := s.httpServer.Shutdown(ctx)
 	if err != nil {
-		message := fmt.Sprintf("%s: %s", msg.ES5001, os.Getenv("PORT"))
-		s.logger.LogE(message, err, skipNofS)
+		s.logger.LogEf(skipNofS, err, "%s: %s", msg.ES5001, os.Getenv("PORT"))
 
-		return fmt.Errorf("%s: %w", msg.ES5001, err)
+		return err
 	}
+
+	s.logger.LogIf(skipNofS, "%s: %s", msg.IS2002, os.Getenv("PORT"))
 
 	return nil
 }
