@@ -3,6 +3,8 @@ package main
 import (
 	"context"
 	"fgw_web_admin_panel/internal/api"
+	"fgw_web_admin_panel/internal/config"
+	"fgw_web_admin_panel/internal/config/db"
 	"fgw_web_admin_panel/pkg"
 	"fgw_web_admin_panel/pkg/logg"
 	"fgw_web_admin_panel/pkg/msg"
@@ -19,16 +21,32 @@ const (
 )
 
 func main() {
-	logger, _ := logg.NewLogger()
+	logger, err := logg.NewLogger()
+	if err != nil {
+		log.Fatal(err)
+	}
 	defer logger.Close()
 
-	err := pkg.LoadEnvFile("")
+	if err = pkg.LoadEnvFile("", logger); err != nil {
+		logger.LogEf(skipNofS, err, "%s", msg.ES5005)
+		log.Fatal(err)
+	}
+
+	cfgMSSQL, err := config.NewCfgMSSQL(logger)
 	if err != nil {
-		log.Println(err)
+		logger.LogEf(skipNofS, err, "%s", msg.EDB504)
+		log.Fatal(err)
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
+
+	mssqlDB, err := db.NewConnMSSQL(ctx, cfgMSSQL, logger)
+	if err != nil {
+		log.Fatalf("%s: %s", msg.EDB505, err)
+	}
+
+	defer db.Close(mssqlDB, logger)
 
 	mux := http.NewServeMux()
 	server := api.NewServer(os.Getenv("PORT"), mux, logger)

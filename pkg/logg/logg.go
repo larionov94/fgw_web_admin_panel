@@ -71,7 +71,7 @@ type Logger struct {
 // NewLogger создает новый экземпляр.
 func NewLogger() (*Logger, error) {
 	if err := ensureLogDir(defaultPathToLog); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("%s: %s. %w", msg.EL5009, defaultPathToLog, err)
 	}
 
 	err := cleanOldLogs(defaultPathToLog, maxQuantityFilesForLog)
