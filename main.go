@@ -43,7 +43,8 @@ func main() {
 
 	mssqlDB, err := db.NewConnMSSQL(ctx, cfgMSSQL, logger)
 	if err != nil {
-		log.Fatalf("%s: %s", msg.EDB505, err)
+		logger.LogEf(skipNofS, err, "%s", msg.EDB505)
+		log.Fatal(err)
 	}
 
 	defer db.Close(mssqlDB, logger)
@@ -56,7 +57,8 @@ func main() {
 
 	go func() {
 		if err := server.StartServer(ctx); err != nil {
-			log.Fatalf("%s: %v", msg.ES5002, err)
+			logger.LogEf(skipNofS, err, "%s", msg.ES5002)
+			log.Fatal(err)
 		}
 	}()
 

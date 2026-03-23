@@ -1,6 +1,7 @@
 package logg
 
 import (
+	"bufio"
 	"encoding/json"
 	"fgw_web_admin_panel/pkg/msg"
 	"fmt"
@@ -10,6 +11,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -18,13 +20,16 @@ const (
 	levelWarn  LogLevel = "WARN"
 	levelError LogLevel = "ERROR"
 
-	defaultPathToLog                   = "logs/"
-	filenameForLog                     = "fgw"
-	formatFileForLog                   = "json"
-	defaultFilePermissions os.FileMode = 0644
-	maxQuantityFilesForLog             = 7
-	separatorIpAddress                 = " | "
-	defaultMaxStackFrames              = 15
+	defaultPathToLog                          = "logs/"
+	filenameForLog                            = "fgw"
+	formatFileForLog                          = "json"
+	defaultFilePermissions        os.FileMode = 0644
+	maxQuantityFilesForLog                    = 7
+	timePeriodicCleaningForLog                = 1 * time.Hour
+	timePeriodicResetBufferForLog             = 3 * time.Second
+
+	separatorIpAddress    = " | "
+	defaultMaxStackFrames = 15
 
 	colorGreen = "\033[32m"
 )
@@ -65,7 +70,13 @@ type LogEntry struct {
 }
 
 type Logger struct {
-	file *os.File
+	file        *os.File
+	currentDate string
+	writer      *bufio.Writer
+	ticker      *time.Ticker
+	done        chan struct{}
+	wg          sync.WaitGroup
+	mu          sync.RWMutex
 }
 
 // NewLogger создает новый экземпляр.
@@ -74,23 +85,120 @@ func NewLogger() (*Logger, error) {
 		return nil, fmt.Errorf("%s: %s. %w", msg.EL5009, defaultPathToLog, err)
 	}
 
-	err := cleanOldLogs(defaultPathToLog, maxQuantityFilesForLog)
-	if err != nil {
-		return nil, fmt.Errorf("%s: %w", msg.EL5008, err)
+	today := time.Now().Format("2006-01-02")
+	logger := &Logger{
+		currentDate: today,
+		done:        make(chan struct{}),
 	}
 
-	filename := createFileNameForLog(defaultPathToLog, filenameForLog)
+	filename := createFileNameForLog(defaultPathToLog, filenameForLog, today)
 
 	file, err := os.OpenFile(filename, os.O_RDWR|os.O_CREATE|os.O_APPEND, defaultFilePermissions)
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", msg.EL5000, err)
 	}
 
-	return &Logger{file}, nil
+	logger.file = file
+	logger.writer = bufio.NewWriter(file)
+	logger.ticker = time.NewTicker(timePeriodicResetBufferForLog)
+
+	logger.wg.Add(1)
+	go logger.flushPeriodically()
+
+	go periodicCleaningLogFiles()
+
+	return logger, nil
+}
+
+// periodicCleaning периодически очищает старые лог файлы.
+func periodicCleaningLogFiles() {
+	ticker := time.NewTicker(timePeriodicCleaningForLog)
+	defer ticker.Stop()
+
+	for range ticker.C {
+		if err := cleanOldLogs(defaultPathToLog, maxQuantityFilesForLog); err != nil {
+			log.Printf("%s: %s. %v", msg.EL5008, defaultPathToLog, err)
+		}
+	}
+}
+
+// flushPeriodically периодически сбрасывает буфер на диск.
+func (l *Logger) flushPeriodically() {
+	defer l.wg.Done()
+	for {
+		select {
+		case <-l.ticker.C:
+			l.flush()
+		case <-l.done:
+			l.flush()
+			return
+		}
+	}
+}
+
+// flush сбрасывает буфер и синхронизирует файл (с защитой).
+func (l *Logger) flush() {
+	l.mu.Lock()
+	defer l.mu.Unlock()
+
+	if l.writer != nil {
+		if err := l.writer.Flush(); err != nil {
+			log.Printf("%s: %s. %v", msg.EL5012, defaultPathToLog, err)
+		}
+	}
+
+	if l.file != nil {
+		if err := l.file.Sync(); err != nil {
+			log.Printf("%s: %s. %v", msg.EL5005, defaultPathToLog, err)
+		}
+	}
+}
+
+// rotateIfNeeded проверяет необходимость смены файла лога и выполняет ротацию.
+func (l *Logger) rotateIfNeeded() error {
+	l.mu.Lock()
+	defer l.mu.Unlock()
+
+	today := time.Now().Format("2006-01-02")
+
+	if l.currentDate == today && l.file != nil {
+		return nil
+	}
+
+	if l.writer != nil {
+		if err := l.writer.Flush(); err != nil {
+			log.Printf("%s: %v", msg.EL5012, err)
+		}
+	}
+
+	if l.file != nil {
+		if err := l.file.Close(); err != nil {
+			return fmt.Errorf("%s: %v", msg.EL5005, err)
+		}
+		l.file = nil
+		l.writer = nil
+	}
+
+	filename := createFileNameForLog(defaultPathToLog, filenameForLog, today)
+
+	file, err := os.OpenFile(filename, os.O_RDWR|os.O_CREATE|os.O_APPEND, defaultFilePermissions)
+	if err != nil {
+		return fmt.Errorf("%s: %w", msg.EL5000, err)
+	}
+
+	l.file = file
+	l.writer = bufio.NewWriter(file)
+	l.currentDate = today
+
+	return nil
 }
 
 // loggCustom формирует и записывает структурированную запись лога в формате JSON.
 func (l *Logger) loggCustom(levelLog LogLevel, msgEntry string, errMsg error, response *ResponseEntry, skipNumOfStackFrames int) {
+	if err := l.rotateIfNeeded(); err != nil {
+		log.Printf("%s: %s. %v", msg.EL5000, defaultPathToLog, err)
+	}
+
 	entry := &LogEntry{
 		DateTime: time.Now().Format("2006-01-02 15:04:05"),
 		InfoPC: InfoPCEntry{
@@ -259,6 +367,9 @@ func (l *Logger) LogHttpEf(statusCode int, methodHTTP, url string, errMsg error,
 // Параметры:
 //   - entry: указатель на структуру лога, содержащую все данные для записи.
 func (l *Logger) writeEntry(entry *LogEntry) error {
+	l.mu.Lock()
+	defer l.mu.Unlock()
+
 	data, err := json.MarshalIndent(entry, "", " ")
 	if err != nil {
 		return fmt.Errorf("%s: %w", msg.EL5003, err)
@@ -266,8 +377,16 @@ func (l *Logger) writeEntry(entry *LogEntry) error {
 
 	data = append(data, ',', '\n')
 
+	if _, err := l.writer.Write(data); err != nil {
+		return fmt.Errorf("%s: %w", msg.EL5004, err)
+	}
+
 	if _, err := l.file.Write(data); err != nil {
 		return fmt.Errorf("%s: %w", msg.EL5004, err)
+	}
+
+	if err := l.writer.Flush(); err != nil {
+		log.Printf("%s: %v", msg.EL5012, err)
 	}
 
 	return nil
@@ -386,8 +505,8 @@ func ensureLogDir(filePath string) error {
 }
 
 // createFileNameForLog создает имя файла для журнала.
-func createFileNameForLog(dir, filename string) string {
-	return filepath.Join(dir, fmt.Sprintf("%s_%s.%s", filename, time.Now().Format("2006-01-02"), formatFileForLog))
+func createFileNameForLog(dir, filename string, currentDate string) string {
+	return filepath.Join(dir, fmt.Sprintf("%s_%s.%s", filename, currentDate, formatFileForLog))
 }
 
 // cleanOldLogs очищает старого файла с логами.
@@ -409,11 +528,37 @@ func cleanOldLogs(dir string, maxFiles int) error {
 }
 
 func (l *Logger) Close() {
+	if l.done != nil {
+		close(l.done)
+	}
+
+	l.wg.Wait()
+
+	var errs []string
+
+	l.mu.Lock()
+	defer l.mu.Unlock()
+
+	if l.writer != nil {
+		if err := l.writer.Flush(); err != nil {
+			errs = append(errs, fmt.Sprintf("%s: %v", msg.EL5012, err))
+		}
+		l.writer = nil
+	}
+
 	if l.file != nil {
+		if err := l.file.Sync(); err != nil {
+			errs = append(errs, fmt.Sprintf("%s: %v", msg.EL5011, err))
+		}
 		if err := l.file.Close(); err != nil {
-			log.Printf("%s: %v", msg.EL5005, err)
+			errs = append(errs, fmt.Sprintf("%s: %v", msg.EL5005, err))
 		}
 		l.file = nil
 	}
-	log.Printf("%s%s", colorGreen, msg.IL2000)
+
+	if len(errs) > 0 {
+		log.Printf("%s: %s", msg.EL5013, strings.Join(errs, ", "))
+	} else {
+		log.Printf("%s%s", colorGreen, msg.IL2000)
+	}
 }

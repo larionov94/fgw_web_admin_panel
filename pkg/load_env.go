@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	formatFileForEnv = ".1env"
+	formatFileForEnv = ".env"
 	skipNofS         = 4 // skipNofS кол-во пропускаемых кадров стека.
 )
 
