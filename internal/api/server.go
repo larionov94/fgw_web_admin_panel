@@ -14,8 +14,6 @@ const (
 	defaultReadTimeOut  = 15 * time.Second
 	defaultWriteTimeOut = 15 * time.Second
 	defaultIdlerTimeOut = 180 * time.Second
-
-	skipNofS = 4 // skipNofS кол-во пропускаемых кадров стека.
 )
 
 type Server struct {
@@ -55,13 +53,13 @@ func NewServer(addr string, handler http.Handler, logger *logg.Logger) *Server {
 //   - Закрываем канал;
 //   - Ожидаем либо отмены контекста, либо ошибки от сервера.
 func (s *Server) StartServer(ctx context.Context) error {
-	s.logger.LogIf(skipNofS, "%s: %s", msg.IS2000, os.Getenv("PORT"))
+	s.logger.LogIf(logg.SkipNofS, "%s: %s", msg.IS2000, os.Getenv("PORT"))
 
 	errCh := make(chan error, 1)
 
 	go func() {
 		if err := s.httpServer.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-			s.logger.LogEf(skipNofS, err, "%s: %s", msg.ES5000, os.Getenv("PORT"))
+			s.logger.LogEf(logg.SkipNofS, err, "%s: %s", msg.ES5000, os.Getenv("PORT"))
 
 			errCh <- err
 		}
@@ -87,12 +85,12 @@ func (s *Server) StartServer(ctx context.Context) error {
 func (s *Server) StopServer(ctx context.Context) error {
 	err := s.httpServer.Shutdown(ctx)
 	if err != nil {
-		s.logger.LogEf(skipNofS, err, "%s: %s", msg.ES5001, os.Getenv("PORT"))
+		s.logger.LogEf(logg.SkipNofS, err, "%s: %s", msg.ES5001, os.Getenv("PORT"))
 
 		return err
 	}
 
-	s.logger.LogIf(skipNofS, "%s: %s", msg.IS2002, os.Getenv("PORT"))
+	s.logger.LogIf(logg.SkipNofS, "%s: %s", msg.IS2002, os.Getenv("PORT"))
 
 	return nil
 }

@@ -16,6 +16,10 @@ import (
 )
 
 const (
+	SkipNofS = 4 // skipNofS кол-во пропускаемых кадров стека.
+)
+
+const (
 	levelInfo  LogLevel = "INFO"
 	levelWarn  LogLevel = "WARN"
 	levelError LogLevel = "ERROR"

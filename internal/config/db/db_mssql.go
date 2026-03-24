@@ -13,7 +13,6 @@ import (
 )
 
 const (
-	skipNofS        = 4 // skipNofS кол-во пропускаемых кадров стека.
 	maxOpenConn     = 50
 	maxIdleConn     = 50
 	maxConnLifetime = 60 * time.Minute
@@ -39,7 +38,7 @@ func NewConnMSSQL(ctx context.Context, cfgMSSQL *config.CfgMSSQL, logger *logg.L
 	)
 	db, err := sql.Open("mssql", dataSourceName)
 	if err != nil {
-		logger.LogEf(skipNofS, err, "%s", msg.EDB500)
+		logger.LogEf(logg.SkipNofS, err, "%s", msg.EDB500)
 
 		return nil, err
 	}
@@ -55,11 +54,11 @@ func NewConnMSSQL(ctx context.Context, cfgMSSQL *config.CfgMSSQL, logger *logg.L
 	err = db.PingContext(pingCtx)
 	if err != nil {
 		Close(db, logger)
-		logger.LogEf(skipNofS, err, "%s", msg.EDB501)
+		logger.LogEf(logg.SkipNofS, err, "%s", msg.EDB501)
 
 		return nil, err
 	}
-	logger.LogIf(skipNofS, "%s", msg.IDB200)
+	logger.LogIf(logg.SkipNofS, "%s", msg.IDB200)
 
 	return db, nil
 }
@@ -71,12 +70,12 @@ func Close(db *sql.DB, logger *logg.Logger) {
 	}
 
 	if err := db.Close(); err != nil {
-		logger.LogEf(skipNofS, err, "%s", msg.EDB502)
+		logger.LogEf(logg.SkipNofS, err, "%s", msg.EDB502)
 
 		return
 	}
 
-	logger.LogIf(skipNofS, "%s", msg.IDB201)
+	logger.LogIf(logg.SkipNofS, "%s", msg.IDB201)
 }
 
 // CloseRows закрывает строки.
@@ -86,10 +85,10 @@ func CloseRows(rows *sql.Rows, logger *logg.Logger) {
 	}
 
 	if err := rows.Close(); err != nil {
-		logger.LogEf(skipNofS, err, "%s", msg.EDB503)
+		logger.LogEf(logg.SkipNofS, err, "%s", msg.EDB503)
 
 		return
 	}
 
-	logger.LogIf(skipNofS, "%s", msg.IDB202)
+	logger.LogIf(logg.SkipNofS, "%s", msg.IDB202)
 }

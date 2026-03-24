@@ -1,7 +1,5 @@
 package repository
 
-const skipNofS = 4 // skipNofS кол-во пропускаемых кадров стека.
-
 const svAFHistoryOfEntryAndExitAddQuery = "exec dbo.svAF_HistoryOfEntryAndExitAdd ?, ?, ?, ?, ?, ?, ?;" // svAFHistoryOfEntryAndExitAddQuery ХП записывает историю входа и выхода пользователя.
 
 const (

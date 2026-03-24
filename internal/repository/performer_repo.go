@@ -30,7 +30,7 @@ func (p *PerformerRepo) AuthByTabNumAndPass(ctx context.Context, tabNum int, pas
 	var authSuccess bool
 
 	if err := p.mssql.QueryRowContext(ctx, svPerformerAuthQuery, tabNum, passwd).Scan(&authSuccess); err != nil {
-		p.logg.LogE(msg.ERS500, err, skipNofS)
+		p.logg.LogE(msg.ERS500, err, logg.SkipNofS)
 
 		return false, err
 	}
@@ -60,12 +60,12 @@ func (p *PerformerRepo) FindByTabNum(ctx context.Context, tabNum int) (*entity.P
 		&performer.AuditRec.UpdatedBy,
 	); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			p.logg.LogEf(skipNofS, err, "%s: tabNum: %d", msg.ERS501, tabNum)
+			p.logg.LogEf(logg.SkipNofS, err, "%s: tabNum: %d", msg.ERS501, tabNum)
 
 			return nil, err
 		}
 
-		p.logg.LogE(msg.ERS500, err, skipNofS)
+		p.logg.LogE(msg.ERS500, err, logg.SkipNofS)
 
 		return nil, err
 	}

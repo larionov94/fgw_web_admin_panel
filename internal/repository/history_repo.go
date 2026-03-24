@@ -26,7 +26,7 @@ type HistoryRepository interface {
 // AddEntryAndExit Добавление записи в историю входов/выходов.
 func (h *HistoryRepo) AddEntryAndExit(ctx context.Context, performerData *entity.HistoryPerformer) error {
 	if performerData == nil {
-		h.logg.LogW(msg.WRS400, skipNofS)
+		h.logg.LogW(msg.WRS400, logg.SkipNofS)
 
 		return nil
 	}
@@ -39,7 +39,7 @@ func (h *HistoryRepo) AddEntryAndExit(ctx context.Context, performerData *entity
 		performerData.RoleName,
 		performerData.CreatedBy,
 	); err != nil {
-		h.logg.LogE(msg.ERS500, err, skipNofS)
+		h.logg.LogE(msg.ERS500, err, logg.SkipNofS)
 
 		return err
 	}

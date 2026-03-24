@@ -16,10 +16,6 @@ import (
 	"time"
 )
 
-const (
-	skipNofS = 4 // skipNofS кол-во пропускаемых кадров стека.
-)
-
 func main() {
 	logger, err := logg.NewLogger()
 	if err != nil {
@@ -28,13 +24,13 @@ func main() {
 	defer logger.Close()
 
 	if err = pkg.LoadEnvFile("", logger); err != nil {
-		logger.LogEf(skipNofS, err, "%s", msg.ES5005)
+		logger.LogEf(logg.SkipNofS, err, "%s", msg.ES5005)
 		log.Fatal(err)
 	}
 
 	cfgMSSQL, err := config.NewCfgMSSQL(logger)
 	if err != nil {
-		logger.LogEf(skipNofS, err, "%s", msg.EDB504)
+		logger.LogEf(logg.SkipNofS, err, "%s", msg.EDB504)
 		log.Fatal(err)
 	}
 
@@ -43,7 +39,7 @@ func main() {
 
 	mssqlDB, err := db.NewConnMSSQL(ctx, cfgMSSQL, logger)
 	if err != nil {
-		logger.LogEf(skipNofS, err, "%s", msg.EDB505)
+		logger.LogEf(logg.SkipNofS, err, "%s", msg.EDB505)
 		log.Fatal(err)
 	}
 
@@ -57,22 +53,22 @@ func main() {
 
 	go func() {
 		if err := server.StartServer(ctx); err != nil {
-			logger.LogEf(skipNofS, err, "%s", msg.ES5002)
+			logger.LogEf(logg.SkipNofS, err, "%s", msg.ES5002)
 			log.Fatal(err)
 		}
 	}()
 
 	time.Sleep(time.Second)
-	logger.LogIf(skipNofS, "%s: %s", msg.IS2001, os.Getenv("PORT"))
+	logger.LogIf(logg.SkipNofS, "%s: %s", msg.IS2001, os.Getenv("PORT"))
 
 	<-quit
 
-	logger.LogWf(skipNofS, "%s", msg.WL4002)
+	logger.LogWf(logg.SkipNofS, "%s", msg.WL4002)
 
 	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer shutdownCancel()
 
 	if err := server.StopServer(shutdownCtx); err != nil {
-		logger.LogE(msg.ES5003, err, skipNofS)
+		logger.LogE(msg.ES5003, err, logg.SkipNofS)
 	}
 }

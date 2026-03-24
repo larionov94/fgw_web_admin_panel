@@ -8,8 +8,6 @@ import (
 	"os"
 )
 
-const skipNofS = 4 // skipNofS кол-во пропускаемых кадров стека.
-
 type CfgEntryMSSQL struct {
 	Server  string `env:"MSSQL_SERVER" `
 	Name    string `env:"MSSQL_NAME" `
@@ -30,7 +28,7 @@ func NewCfgMSSQL(logger *logg.Logger) (*CfgMSSQL, error) {
 	}
 
 	if err := pkg.LoadEnvFile("", logger); err != nil {
-		logger.LogEf(skipNofS, err, "%s", msg.ES5004)
+		logger.LogEf(logg.SkipNofS, err, "%s", msg.ES5004)
 
 		return nil, err
 	}

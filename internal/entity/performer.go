@@ -17,3 +17,9 @@ type Performer struct {
 	RoleIdAFGW    int        `json:"roleIdAFGW"`    // RoleIdAFGW - идентификатор роли для доступа к AFGW. (ТЛК).
 	AuditRec      Audit      `json:"auditRec"`      // AuditRec - аудит.
 }
+
+// PerformerAuth данные авторизации сотрудника.
+type PerformerAuth struct {
+	Success bool   `json:"success"`
+	Message string `json:"message"`
+}
