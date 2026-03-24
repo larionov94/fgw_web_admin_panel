@@ -8,8 +8,6 @@ import (
 	"fgw_web_admin_panel/pkg/msg"
 )
 
-const skipNofS = 4 // skipNofS кол-во пропускаемых кадров стека.
-
 // HistoryRepo репозиторий для работы с БД.
 type HistoryRepo struct {
 	mssql *sql.DB
@@ -33,7 +31,7 @@ func (h *HistoryRepo) AddEntryAndExit(ctx context.Context, performerData *middle
 		return nil
 	}
 
-	if _, err := h.mssql.ExecContext(ctx, svAFHistoryOfEntryAndExitAdd,
+	if _, err := h.mssql.ExecContext(ctx, svAFHistoryOfEntryAndExitAddQuery,
 		performerData.Hostname,
 		performerData.IpAddress,
 		performerData.TraceId,
