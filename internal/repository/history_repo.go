@@ -3,7 +3,7 @@ package repository
 import (
 	"context"
 	"database/sql"
-	"fgw_web_admin_panel/internal/api/middleware"
+	"fgw_web_admin_panel/internal/entity"
 	"fgw_web_admin_panel/pkg/logg"
 	"fgw_web_admin_panel/pkg/msg"
 )
@@ -20,11 +20,11 @@ func NewHistoryRepo(mssql *sql.DB, logger *logg.Logger) *HistoryRepo {
 }
 
 type HistoryRepository interface {
-	AddEntryAndExit(ctx context.Context, performerData *middleware.PerformerData) error
+	AddEntryAndExit(ctx context.Context, performerData *entity.HistoryPerformer) error
 }
 
 // AddEntryAndExit Добавление записи в историю входов/выходов.
-func (h *HistoryRepo) AddEntryAndExit(ctx context.Context, performerData *middleware.PerformerData) error {
+func (h *HistoryRepo) AddEntryAndExit(ctx context.Context, performerData *entity.HistoryPerformer) error {
 	if performerData == nil {
 		h.logg.LogW(msg.WRS400, skipNofS)
 
