@@ -1,4 +1,4 @@
-package main
+package app
 
 import (
 	"context"
@@ -16,7 +16,7 @@ import (
 	"time"
 )
 
-func main() {
+func StartApplication() {
 	logger, err := logg.NewLogger()
 	if err != nil {
 		log.Fatal(err)
@@ -46,6 +46,9 @@ func main() {
 	defer db.Close(mssqlDB, logger)
 
 	mux := http.NewServeMux()
+
+	mux.Handle("/web/", http.StripPrefix("/web/", http.FileServer(http.Dir("web/"))))
+
 	server := api.NewServer(os.Getenv("PORT"), mux, logger)
 
 	quit := make(chan os.Signal, 1)
