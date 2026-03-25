@@ -21,21 +21,34 @@ func NewPerformerRepo(mssql *sql.DB, logger *logg.Logger) *PerformerRepo {
 }
 
 type PerformerRepository interface {
-	AuthByTabNumAndPass(ctx context.Context, tabNum int, passwd string) (bool, error)
+	AuthByTabNumAndPass(ctx context.Context, tabNum int, passwd string) (*entity.Performer, error)
 	FindByTabNum(ctx context.Context, tabNum int) (*entity.Performer, error)
 }
 
 // AuthByTabNumAndPass аутентификация по табельному номеру и паролю.
-func (p *PerformerRepo) AuthByTabNumAndPass(ctx context.Context, tabNum int, passwd string) (bool, error) {
-	var authSuccess bool
+func (p *PerformerRepo) AuthByTabNumAndPass(ctx context.Context, tabNum int, passwd string) (*entity.Performer, error) {
+	var performer entity.Performer
 
-	if err := p.mssql.QueryRowContext(ctx, svPerformerAuthQuery, tabNum, passwd).Scan(&authSuccess); err != nil {
+	if err := p.mssql.QueryRowContext(ctx, svPerformerAuthQuery, tabNum, passwd).Scan(
+		&performer.Id,
+		&performer.SectorId,
+		&performer.FIO,
+		&performer.TabNum,
+		&performer.Barcode,
+		&performer.AccessBarcode,
+		&performer.Archive,
+		&performer.PerformerRole.RoleIdAForms,
+		&performer.PerformerRole.RoleIdAFGW,
+		&performer.PerformerRole.RoleNameAForms,
+		&performer.PerformerRole.RoleNameAFGW,
+		&performer.AuthSuccess,
+	); err != nil {
 		p.logg.LogE(msg.ERS500, err, logg.SkipNofS)
 
-		return false, err
+		return nil, err
 	}
 
-	return authSuccess, nil
+	return &performer, nil
 }
 
 // FindByTabNum ищет сотрудника по табельному номеру.
@@ -52,8 +65,10 @@ func (p *PerformerRepo) FindByTabNum(ctx context.Context, tabNum int) (*entity.P
 		&performer.Passwd,
 		&performer.IssuedAt,
 		&performer.Archive,
-		&performer.RoleIdAForms,
-		&performer.RoleIdAFGW,
+		&performer.PerformerRole.RoleIdAForms,
+		&performer.PerformerRole.RoleIdAFGW,
+		&performer.PerformerRole.RoleNameAForms,
+		&performer.PerformerRole.RoleNameAFGW,
 		&performer.AuditRec.CreatedAt,
 		&performer.AuditRec.CreatedBy,
 		&performer.AuditRec.UpdatedAt,

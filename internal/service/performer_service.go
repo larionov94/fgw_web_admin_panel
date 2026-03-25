@@ -13,16 +13,16 @@ type PerformerService struct {
 	logg          *logg.Logger
 }
 
-func NewPerformerUseCase(performerRepo repository.PerformerRepository) *PerformerService {
-	return &PerformerService{performerRepo: performerRepo}
+func NewPerformerUseCase(performerRepo repository.PerformerRepository, logg *logg.Logger) *PerformerService {
+	return &PerformerService{performerRepo: performerRepo, logg: logg}
 }
 
 type PerformerUseCase interface {
-	AuthPerformer(ctx context.Context, tabNum int, passwd string) (string, error)
+	AuthPerformerWithData(ctx context.Context, tabNum int, passwd string) (*entity.PerformerAuth, error)
 }
 
-// AuthPerformer бизнес-логика аутентификации сотрудника.
-func (p *PerformerService) AuthPerformer(ctx context.Context, tabNum int, passwd string) (*entity.PerformerAuth, error) {
+// AuthPerformerWithData бизнес-логика аутентификации сотрудника с данными.
+func (p *PerformerService) AuthPerformerWithData(ctx context.Context, tabNum int, passwd string) (*entity.PerformerAuth, error) {
 	if tabNum <= 0 || passwd == "" {
 		p.logg.LogW(msg.WSR400, logg.SkipNofS)
 
@@ -32,27 +32,28 @@ func (p *PerformerService) AuthPerformer(ctx context.Context, tabNum int, passwd
 		}, nil
 	}
 
-	authOK, err := p.performerRepo.AuthByTabNumAndPass(ctx, tabNum, passwd)
+	authWithDataPerformer, err := p.performerRepo.AuthByTabNumAndPass(ctx, tabNum, passwd)
 	if err != nil {
 		p.logg.LogE(msg.ESR501, err, logg.SkipNofS)
 
 		return &entity.PerformerAuth{
 			Success: false,
 			Message: msg.ESR501,
-		}, nil
+		}, err
 	}
 
-	if !authOK {
-		p.logg.LogWf(logg.SkipNofS, "%s: Таб. номер: %d", msg.WSR401, tabNum)
+	if !authWithDataPerformer.AuthSuccess {
+		p.logg.LogWf(logg.SkipNofS, "%s: %d", msg.WSR401, tabNum)
 
 		return &entity.PerformerAuth{
 			Success: false,
 			Message: msg.WSR401,
-		}, err
+		}, nil
 	}
 
 	return &entity.PerformerAuth{
-		Success: true,
-		Message: msg.ISR200,
+		Success:   true,
+		Performer: *authWithDataPerformer,
+		Message:   msg.ISR200,
 	}, nil
 }
