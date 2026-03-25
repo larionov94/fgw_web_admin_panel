@@ -42,7 +42,7 @@ type LogLevel string
 
 type InfoPCEntry struct {
 	Domain string `json:"domain"`
-	IPAddr string `json:"ipAddr"`
+	IPAddr string `json:"IPAddr"`
 }
 
 type MessageEntry struct {
@@ -206,8 +206,8 @@ func (l *Logger) loggCustom(levelLog LogLevel, msgEntry string, errMsg error, re
 	entry := &LogEntry{
 		DateTime: time.Now().Format("2006-01-02 15:04:05"),
 		InfoPC: InfoPCEntry{
-			Domain: l.hostName(),
-			IPAddr: l.ipAddr(),
+			Domain: l.HostName(),
+			IPAddr: l.IPAddr(),
 		},
 		LevelLog: levelLog,
 		Message:  l.createdMsg(msgEntry, errMsg),
@@ -396,8 +396,8 @@ func (l *Logger) writeEntry(entry *LogEntry) error {
 	return nil
 }
 
-// hostName возвращает имя текущего хоста (компьютера/сервера).
-func (l *Logger) hostName() string {
+// HostName возвращает имя текущего хоста (компьютера/сервера).
+func (l *Logger) HostName() string {
 	hostname, err := os.Hostname()
 	if err != nil {
 		return fmt.Sprintf("%s: %v", msg.EL5001, err)
@@ -406,9 +406,9 @@ func (l *Logger) hostName() string {
 	return hostname
 }
 
-// ipAddr возвращает строковое представление всех IP-адресов текущего хоста.
-func (l *Logger) ipAddr() string {
-	ips, err := net.LookupIP(l.hostName())
+// IPAddr возвращает строковое представление всех IP-адресов текущего хоста.
+func (l *Logger) IPAddr() string {
+	ips, err := net.LookupIP(l.HostName())
 	if err != nil {
 		return fmt.Sprintf("%s: %v", msg.EL5002, err)
 	}
