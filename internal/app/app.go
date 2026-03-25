@@ -5,6 +5,9 @@ import (
 	"fgw_web_admin_panel/internal/api"
 	"fgw_web_admin_panel/internal/config"
 	"fgw_web_admin_panel/internal/config/db"
+	"fgw_web_admin_panel/internal/handler/http_web"
+	"fgw_web_admin_panel/internal/repository"
+	"fgw_web_admin_panel/internal/service"
 	"fgw_web_admin_panel/pkg"
 	"fgw_web_admin_panel/pkg/logg"
 	"fgw_web_admin_panel/pkg/msg"
@@ -44,8 +47,13 @@ func StartApplication() {
 	}
 
 	defer db.Close(mssqlDB, logger)
+	repoPerformer := repository.NewPerformerRepo(mssqlDB, logger)
+	servicePerformer := service.NewPerformerService(repoPerformer, logger)
+	handlerPerformer := http_web.NewAuthHandler(*servicePerformer, logger)
 
 	mux := http.NewServeMux()
+
+	handlerPerformer.ServeHTTPRouter(mux)
 
 	mux.Handle("/web/", http.StripPrefix("/web/", http.FileServer(http.Dir("web/"))))
 

@@ -13,7 +13,7 @@ type PerformerService struct {
 	logg          *logg.Logger
 }
 
-func NewPerformerUseCase(performerRepo repository.PerformerRepository, logg *logg.Logger) *PerformerService {
+func NewPerformerService(performerRepo repository.PerformerRepository, logg *logg.Logger) *PerformerService {
 	return &PerformerService{performerRepo: performerRepo, logg: logg}
 }
 
