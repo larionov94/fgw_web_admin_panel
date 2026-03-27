@@ -104,13 +104,14 @@
 <body>
 <div class="popup" id="errorPopup">
     <div class="popup-header">
-        <h2>{{ .Title }}</h2>
+        <h2>{{ .ErrPage.Title }}</h2>
         <button class="close-icon" onclick="goBackToForm()">×</button>
     </div>
     <div class="popup-body">
         <div class="icon">⚠️</div>
         <div class="error-message">
-            <b>{{ .MsgCode}}</b>
+            <b>{{ .ErrPage.ErrMsg}}</b>
+            <b>{{ .ErrPage.MsgCode}}</b>
         </div>
         <p>Пожалуйста, исправьте ошибку и попробуйте снова.</p>
     </div>
@@ -132,16 +133,16 @@
             window.close();
 
             // Если окно не закрылось (браузер блокирует), редиректим на форму
-            setTimeout(() => {
-                // Пытаемся получить URL формы из referrer или сессии
-                const referrer = document.referrer;
-                if (referrer && referrer.includes('productions/add')) {
-                    window.location.href = referrer;
-                } else {
-                    // Если не можем определить URL формы, идем на список продукции
-                    window.location.href = '/aforms/productions';
-                }
-            }, 100);
+            // setTimeout(() => {
+            //     // Пытаемся получить URL формы из referrer или сессии
+            //     const referrer = document.referrer;
+            //     if (referrer && referrer.includes('productions/add')) {
+            //         window.location.href = referrer;
+            //     } else {
+            //         // Если не можем определить URL формы, идем на список продукции
+            //         window.location.href = '/aforms/productions';
+            //     }
+            // }, 100);
         }
     }
 

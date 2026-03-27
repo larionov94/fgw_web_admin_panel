@@ -3,11 +3,11 @@ package http_web
 import (
 	"fgw_web_admin_panel/internal/api"
 	"fgw_web_admin_panel/internal/api/middleware"
+	"fgw_web_admin_panel/internal/handler/page"
 	"fgw_web_admin_panel/internal/service"
 	"fgw_web_admin_panel/pkg/convert"
 	"fgw_web_admin_panel/pkg/logg"
 	"fgw_web_admin_panel/pkg/msg"
-	"html/template"
 	"net/http"
 	"net/url"
 )
@@ -21,7 +21,6 @@ const (
 	urlLogin              = "/login"
 	urlLogoutTempRedirect = "/logout-temp-redirect"
 	urlTempRedirect       = "/temp-redirect"
-	pathToDefault         = "/"
 	tmplStartPageHTML     = "index.html"
 )
 
@@ -70,7 +69,11 @@ func (a *AuthHandler) AuthPerformerHTML(w http.ResponseWriter, r *http.Request) 
 	}
 
 	if err := r.ParseForm(); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		page.RenderPageError(w, r, page.ErrorPage{
+			ErrMsg:     err,
+			MsgCode:    msg.EH5001,
+			StatusCode: http.StatusBadRequest,
+		})
 
 		return
 	}
@@ -80,11 +83,21 @@ func (a *AuthHandler) AuthPerformerHTML(w http.ResponseWriter, r *http.Request) 
 
 	if performerIdStr == "" || performerPass == "" {
 		http.Error(w, "PerformerId or PerformerPass is empty", http.StatusBadRequest)
+		page.RenderPageError(w, r, page.ErrorPage{
+			ErrMsg:     nil,
+			MsgCode:    msg.EH5003,
+			StatusCode: http.StatusUnauthorized,
+		})
 
 		return
 	}
 
-	performerId := convert.ConvStrToInt(performerIdStr)
+	performerId, err := convert.ConvStrToInt(performerIdStr)
+	if err != nil {
+		a.logg.LogE(msg.EH5004, err, logg.SkipNofS)
+
+		return
+	}
 
 	authResult, err := a.performerService.AuthPerformerWithData(r.Context(), performerId, performerPass)
 	if err != nil {
@@ -93,6 +106,7 @@ func (a *AuthHandler) AuthPerformerHTML(w http.ResponseWriter, r *http.Request) 
 		} else {
 			http.Redirect(w, r, "/login?error="+url.QueryEscape(""), http.StatusFound)
 		}
+
 		return
 	}
 
@@ -107,35 +121,14 @@ func (a *AuthHandler) AuthPerformerHTML(w http.ResponseWriter, r *http.Request) 
 		if err != nil {
 			a.authMiddleware.SetSecurityHeaders(w)
 
-			tmpl, err := template.ParseFiles("web/templates/html/error.html")
-			if err != nil {
-				http.Error(w, "Internal server error", http.StatusInternalServerError)
-
-				return
-			}
-
-			data := struct {
-				Title      string
-				MsgCode    string
-				StatusCode int
-				Method     string
-				Path       string
-			}{
-				Title:      "Ошибка",
-				MsgCode:    "1111",
-				StatusCode: 1111,
-				Method:     r.Method,
-				Path:       r.URL.Path,
-			}
-
-			if err = tmpl.Execute(w, data); err != nil {
-
-				return
-			}
+			page.RenderPageError(w, r, page.ErrorPage{
+				ErrMsg:     err,
+				MsgCode:    msg.EH5005,
+				StatusCode: http.StatusUnauthorized,
+			})
 
 			return
 		}
-
 		a.sendLoginSuccessPage(w, r)
 	} else {
 		http.Redirect(w, r, "/login?error="+url.QueryEscape(authResult.Message), http.StatusFound)
@@ -211,17 +204,7 @@ func (a *AuthHandler) LoginPage(w http.ResponseWriter, r *http.Request) {
 		ErrorMessage: errMsg,
 	}
 
-	tmpl, err := template.ParseFiles("web/templates/html/auth.html")
-	if err != nil {
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-
-		return
-	}
-
-	if err = tmpl.Execute(w, data); err != nil {
-
-		return
-	}
+	page.RenderPage(w, r, tmplAuthHTML, data)
 }
 
 // Обновленный sendLoginSuccessPage
@@ -304,32 +287,13 @@ func (a *AuthHandler) renderRedirectPage(w http.ResponseWriter, r *http.Request,
 
 	a.authMiddleware.SetSecurityHeaders(w)
 
-	tmpl, err := template.ParseFiles("web/templates/html/redirect.html")
-	if err != nil {
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-
-		return
-	}
-
-	if err = tmpl.Execute(w, data); err != nil {
-
-		return
-	}
+	page.RenderPage(w, r, tmplRedirectHTML, data)
 }
 
 func (a *AuthHandler) StartPage(w http.ResponseWriter, r *http.Request) {
-
 	performerData, err := a.authMiddleware.GetPerformerData(r, a.performerService)
-
 	if err != nil {
 		a.sendLogoutPageWithHistoryClear(w, r)
-
-		return
-	}
-
-	tmpl, err := template.ParseFiles("web/templates/html/index.html")
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
 
 		return
 	}
@@ -344,12 +308,7 @@ func (a *AuthHandler) StartPage(w http.ResponseWriter, r *http.Request) {
 		InfoPerformer: performerData,
 	}
 
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	page.RenderPage(w, r, tmplStartPageHTML, data)
 
-	if err = tmpl.Execute(w, data); err != nil {
-		a.logg.LogE(msg.ESS500, err, logg.SkipNofS)
-
-		return
-	}
-
+	return
 }

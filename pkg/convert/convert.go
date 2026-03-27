@@ -6,13 +6,13 @@ import (
 )
 
 // ConvStrToInt конвертировать строку в число.
-func ConvStrToInt(str string) int {
+func ConvStrToInt(str string) (int, error) {
 	value, err := strconv.Atoi(str)
 	if err != nil {
-		log.Printf("Ошибка: [%s] --- ссылка на код: [  ] --- значение: [%v]", err.Error(), value)
+		log.Printf("Ошибка: [%s] --- значение: [%v]", err.Error(), value)
 
-		return 0
+		return 0, err
 	}
 
-	return value
+	return value, nil
 }
