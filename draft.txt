@@ -21,3 +21,11 @@ const (
 		time.Sleep(10 * time.Second) // 10 секунд
 		// Если за это время сменилась минута - новый файл должен создаться
 	}
+
+//-----------------------------//
+// Для проверки куки           //
+//-----------------------------//	
+cookies := r.Cookies()
+for _, c := range cookies {
+    m.logg.LogIf(logg.SkipNofS, "Cookie: %s=%s", c.Name, c.Value)
+}

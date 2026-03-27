@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 	"fgw_web_admin_panel/internal/api"
+	"fgw_web_admin_panel/internal/api/middleware"
 	"fgw_web_admin_panel/internal/config"
 	"fgw_web_admin_panel/internal/config/db"
 	"fgw_web_admin_panel/internal/handler/http_web"
@@ -20,11 +21,15 @@ import (
 )
 
 func StartApplication() {
+	api.InitSessionStore()
+
 	logger, err := logg.NewLogger()
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer logger.Close()
+
+	authMiddleware := middleware.NewAuthMiddleware(api.Store, logger)
 
 	if err = pkg.LoadEnvFile("", logger); err != nil {
 		logger.LogEf(logg.SkipNofS, err, "%s", msg.ES5005)
@@ -49,7 +54,7 @@ func StartApplication() {
 	defer db.Close(mssqlDB, logger)
 	repoPerformer := repository.NewPerformerRepo(mssqlDB, logger)
 	servicePerformer := service.NewPerformerService(repoPerformer, logger)
-	handlerPerformer := http_web.NewAuthHandler(*servicePerformer, logger)
+	handlerPerformer := http_web.NewAuthHandler(servicePerformer, logger, authMiddleware)
 
 	mux := http.NewServeMux()
 

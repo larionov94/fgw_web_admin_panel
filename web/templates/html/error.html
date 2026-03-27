@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ .Title}} - Ошибка</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: rgba(0, 0, 0, 0.5);
+            padding: 20px;
+        }
+
+        .popup {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            max-width: 500px;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .popup-header {
+            background: #dc3545;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .popup-header h2 {
+            font-size: 1.5rem;
+            margin: 0;
+        }
+
+        .popup-body {
+            padding: 30px;
+            text-align: center;
+        }
+
+        .error-message {
+            background: #fff5f5;
+            border: 1px solid #f8d7da;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 20px 0;
+            color: #721c24;
+            font-size: 1.1rem;
+            line-height: 1.5;
+        }
+
+        .popup-footer {
+            padding: 20px;
+            text-align: center;
+            border-top: 1px solid #eee;
+        }
+
+        .btn {
+            padding: 10px 30px;
+            border: none;
+            border-radius: 4px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            font-weight: bold;
+        }
+
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #0056b3;
+        }
+
+        .close-icon {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: white;
+        }
+
+        .icon {
+            font-size: 48px;
+            color: #dc3545;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+<div class="popup" id="errorPopup">
+    <div class="popup-header">
+        <h2>{{ .Title }}</h2>
+        <button class="close-icon" onclick="goBackToForm()">×</button>
+    </div>
+    <div class="popup-body">
+        <div class="icon">⚠️</div>
+        <div class="error-message">
+            <b>{{ .MsgCode}}</b>
+        </div>
+        <p>Пожалуйста, исправьте ошибку и попробуйте снова.</p>
+    </div>
+    <div class="popup-footer">
+        <button class="btn btn-primary" onclick="goBackToForm()">
+            Вернуться к форме
+        </button>
+    </div>
+</div>
+
+<script>
+    // Функция для возврата к форме
+    function goBackToForm() {
+        // Пробуем вернуться назад в истории
+        if (window.history.length > 1) {
+            window.history.back();
+        } else {
+            // Если истории нет, закрываем окно/вкладку
+            window.close();
+
+            // Если окно не закрылось (браузер блокирует), редиректим на форму
+            setTimeout(() => {
+                // Пытаемся получить URL формы из referrer или сессии
+                const referrer = document.referrer;
+                if (referrer && referrer.includes('productions/add')) {
+                    window.location.href = referrer;
+                } else {
+                    // Если не можем определить URL формы, идем на список продукции
+                    window.location.href = '/aforms/productions';
+                }
+            }, 100);
+        }
+    }
+
+    // Закрытие по клавише Esc
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {
+            goBackToForm();
+        }
+    });
+
+    // Закрытие при клике вне попапа
+    document.addEventListener('click', function(event) {
+        if (event.target === document.body) {
+            goBackToForm();
+        }
+    });
+
+    // Автоматическое закрытие через 10 секунд (опционально)
+    setTimeout(() => {
+        console.log('Автоматическое закрытие через 10 секунд...');
+    }, 10000);
+
+    // Фокусируем кнопку для доступности
+    window.onload = function() {
+        const button = document.querySelector('.btn-primary');
+        if (button) {
+            button.focus();
+        }
+    };
+</script>
+</body>
+</html>

@@ -1,32 +1,355 @@
 package http_web
 
 import (
+	"fgw_web_admin_panel/internal/api"
+	"fgw_web_admin_panel/internal/api/middleware"
 	"fgw_web_admin_panel/internal/service"
+	"fgw_web_admin_panel/pkg/convert"
 	"fgw_web_admin_panel/pkg/logg"
+	"fgw_web_admin_panel/pkg/msg"
 	"html/template"
 	"net/http"
+	"net/url"
 )
 
-type AuthHandler struct {
-	performerService service.PerformerService
-	logg             *logg.Logger
+const (
+	tmplRedirectHTML = "redirect.html"
+	tmplAuthHTML     = "auth.html"
+
+	urlAdmin              = "/admin"
+	urlAuth               = "/auth"
+	urlLogin              = "/login"
+	urlLogoutTempRedirect = "/logout-temp-redirect"
+	urlTempRedirect       = "/temp-redirect"
+	pathToDefault         = "/"
+	tmplStartPageHTML     = "index.html"
+)
+
+const (
+	RedirectDelayFast    = 100  // 0.1 секунда
+	RedirectDelayNormal  = 300  // 0.3 секунды
+	FallbackDelayDefault = 3000 // 3 секунды
+)
+
+type RedirectData struct {
+	Title           string
+	Message         string
+	NoScriptMessage string
+	TargetURL       string
+	CurrentURL      string
+	TempURL         string
+	Delay           int
+	FallbackDelay   int
+	ClearHistory    bool
+	AddTempState    bool
 }
 
-func NewAuthHandler(performerService service.PerformerService, logg *logg.Logger) *AuthHandler {
-	return &AuthHandler{performerService, logg}
+type AuthHandler struct {
+	performerService service.PerformerUseCase
+	logg             *logg.Logger
+	authMiddleware   *middleware.AuthMiddleware
+}
+
+func NewAuthHandler(performerService service.PerformerUseCase, logg *logg.Logger, authMiddleware *middleware.AuthMiddleware) *AuthHandler {
+	return &AuthHandler{performerService, logg, authMiddleware}
 }
 
 func (a *AuthHandler) ServeHTTPRouter(mux *http.ServeMux) {
-	mux.HandleFunc("/", a.StartPage)
+	mux.HandleFunc("/", a.ShowAuthForm)
+	mux.HandleFunc("/login", a.LoginPage)
+	mux.HandleFunc("/auth", a.AuthPerformerHTML)
+	mux.HandleFunc("/logout", a.Logout)
+	mux.HandleFunc("/admin", a.authMiddleware.RequireAuth(a.authMiddleware.RequireRoleForAForms([]int{0}, a.StartPage)))
+}
+
+func (a *AuthHandler) AuthPerformerHTML(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+
+		return
+	}
+
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+
+		return
+	}
+
+	performerIdStr := r.FormValue("performerTabNum")
+	performerPass := r.FormValue("performerPassword")
+
+	if performerIdStr == "" || performerPass == "" {
+		http.Error(w, "PerformerId or PerformerPass is empty", http.StatusBadRequest)
+
+		return
+	}
+
+	performerId := convert.ConvStrToInt(performerIdStr)
+
+	authResult, err := a.performerService.AuthPerformerWithData(r.Context(), performerId, performerPass)
+	if err != nil {
+		if authResult != nil && !authResult.Success {
+			http.Redirect(w, r, "/login?error="+url.QueryEscape(authResult.Message), http.StatusFound)
+		} else {
+			http.Redirect(w, r, "/login?error="+url.QueryEscape(""), http.StatusFound)
+		}
+		return
+	}
+
+	if authResult.Success {
+		err := a.authMiddleware.CreateAuthSecuritySession(w, r, &middleware.PerformerData{
+			PerformerFIO:          authResult.Performer.FIO,
+			PerformerTabNum:       performerId,
+			PerformerRoleAForms:   authResult.Performer.PerformerRole.RoleNameAForms,
+			PerformerRoleAFormsId: authResult.Performer.PerformerRole.RoleIdAForms,
+		})
+
+		if err != nil {
+			a.authMiddleware.SetSecurityHeaders(w)
+
+			tmpl, err := template.ParseFiles("web/templates/html/error.html")
+			if err != nil {
+				http.Error(w, "Internal server error", http.StatusInternalServerError)
+
+				return
+			}
+
+			data := struct {
+				Title      string
+				MsgCode    string
+				StatusCode int
+				Method     string
+				Path       string
+			}{
+				Title:      "Ошибка",
+				MsgCode:    "1111",
+				StatusCode: 1111,
+				Method:     r.Method,
+				Path:       r.URL.Path,
+			}
+
+			if err = tmpl.Execute(w, data); err != nil {
+
+				return
+			}
+
+			return
+		}
+
+		a.sendLoginSuccessPage(w, r)
+	} else {
+		http.Redirect(w, r, "/login?error="+url.QueryEscape(authResult.Message), http.StatusFound)
+	}
+}
+
+func (a *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
+	session, err := api.Store.Get(r, api.GetSessionName())
+	if err != nil {
+		a.sendLogoutPageWithHistoryClear(w, r)
+
+		return
+	}
+
+	if token, ok := session.Values[api.GetTokenKey()].(string); ok {
+		if mw, ok := interface{}(a.authMiddleware).(interface{ RemoveSessionToken(token string) }); ok {
+			mw.RemoveSessionToken(token)
+		}
+	}
+
+	for key := range session.Values {
+		delete(session.Values, key)
+	}
+
+	session.Options.MaxAge = -1
+	session.Options.HttpOnly = true
+	session.Options.Secure = true
+	session.Options.SameSite = http.SameSiteStrictMode
+
+	if err = session.Save(r, w); err != nil {
+		return
+	}
+
+	http.SetCookie(w, &http.Cookie{
+		Name:     api.GetSessionName(),
+		Value:    "",
+		Path:     api.GetPathToDefault(),
+		MaxAge:   -1,
+		HttpOnly: true,
+		Secure:   true,
+		SameSite: http.SameSiteStrictMode,
+	})
+
+	a.sendLogoutPageWithHistoryClear(w, r)
+}
+
+func (a *AuthHandler) ShowAuthForm(w http.ResponseWriter, r *http.Request) {
+	session, err := api.Store.Get(r, api.GetSessionName())
+	if err == nil {
+		if auth, ok := session.Values[api.GetAuthPerformer()].(bool); ok && auth {
+			a.safeRedirectBasedOnRole(w, r)
+
+			return
+		}
+	}
+
+	a.LoginPage(w, r)
+}
+
+func (a *AuthHandler) LoginPage(w http.ResponseWriter, r *http.Request) {
+	a.authMiddleware.SetSecurityHeaders(w)
+
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+
+		return
+	}
+
+	errMsg := r.URL.Query().Get("error")
+	data := struct {
+		ErrorMessage string
+	}{
+		ErrorMessage: errMsg,
+	}
+
+	tmpl, err := template.ParseFiles("web/templates/html/auth.html")
+	if err != nil {
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+
+		return
+	}
+
+	if err = tmpl.Execute(w, data); err != nil {
+
+		return
+	}
+}
+
+// Обновленный sendLoginSuccessPage
+func (a *AuthHandler) sendLoginSuccessPage(w http.ResponseWriter, r *http.Request) {
+	target := urlAdmin
+
+	data := RedirectData{
+		Title:           "Успешный вход",
+		Message:         "Вход выполнен успешно. Выполняется безопасное перенаправление...",
+		NoScriptMessage: "Включите JavaScript для безопасного перехода.",
+		TargetURL:       target,
+		CurrentURL:      urlAuth,
+		TempURL:         urlLogoutTempRedirect,
+		Delay:           RedirectDelayNormal,
+		FallbackDelay:   2000,
+		ClearHistory:    true,
+		AddTempState:    true,
+	}
+
+	a.renderRedirectPage(w, r, data)
+}
+
+// safeRedirectBasedOnRole с использованием общего шаблона
+func (a *AuthHandler) safeRedirectBasedOnRole(w http.ResponseWriter, r *http.Request) {
+	target := urlAdmin
+
+	data := RedirectData{
+		Title:           "Перенаправление",
+		Message:         "Вы уже авторизованы. Выполняется безопасное перенаправление...",
+		NoScriptMessage: "Включите JavaScript для безопасного перехода.",
+		TargetURL:       target,
+		CurrentURL:      r.URL.Path,
+		TempURL:         urlTempRedirect,
+		Delay:           RedirectDelayFast,
+		FallbackDelay:   FallbackDelayDefault,
+		ClearHistory:    true,
+		AddTempState:    false,
+	}
+
+	a.renderRedirectPage(w, r, data)
+}
+
+// Обновленный sendLogoutPageWithHistoryClear
+func (a *AuthHandler) sendLogoutPageWithHistoryClear(w http.ResponseWriter, r *http.Request) {
+	data := RedirectData{
+		Title:           "Выход из системы",
+		Message:         "Вы успешно вышли из системы. Выполняется безопасное перенаправление на страницу входа...",
+		NoScriptMessage: "Включите JavaScript для безопасного выхода.",
+		TargetURL:       urlLogin,
+		CurrentURL:      r.URL.Path,
+		TempURL:         urlLogoutTempRedirect,
+		Delay:           RedirectDelayNormal,
+		FallbackDelay:   FallbackDelayDefault,
+		ClearHistory:    true,
+		AddTempState:    true,
+	}
+
+	a.renderRedirectPage(w, r, data)
+}
+
+func (a *AuthHandler) renderRedirectPage(w http.ResponseWriter, r *http.Request, data RedirectData) {
+	if data.Title == "" {
+		data.Title = "Перенаправление"
+	}
+	if data.Message == "" {
+		data.Message = "Выполняется безопасное перенаправление..."
+	}
+	if data.NoScriptMessage == "" {
+		data.NoScriptMessage = "Включите JavaScript для безопасного перехода."
+	}
+	if data.CurrentURL == "" {
+		data.CurrentURL = r.URL.Path
+	}
+	if data.Delay == 0 {
+		data.Delay = RedirectDelayNormal
+	}
+	if data.FallbackDelay == 0 {
+		data.FallbackDelay = FallbackDelayDefault
+	}
+
+	a.authMiddleware.SetSecurityHeaders(w)
+
+	tmpl, err := template.ParseFiles("web/templates/html/redirect.html")
+	if err != nil {
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+
+		return
+	}
+
+	if err = tmpl.Execute(w, data); err != nil {
+
+		return
+	}
 }
 
 func (a *AuthHandler) StartPage(w http.ResponseWriter, r *http.Request) {
-	parseHTML, err := template.ParseFiles("web/templates/html/auth.html")
+
+	performerData, err := a.authMiddleware.GetPerformerData(r, a.performerService)
+
+	if err != nil {
+		a.sendLogoutPageWithHistoryClear(w, r)
+
+		return
+	}
+
+	tmpl, err := template.ParseFiles("web/templates/html/index.html")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 
 		return
 	}
 
-	parseHTML.Execute(w, a)
+	data := struct {
+		Title         string
+		CurrentPage   string
+		InfoPerformer *middleware.PerformerData
+	}{
+		Title:         "123",
+		CurrentPage:   "dashboard",
+		InfoPerformer: performerData,
+	}
+
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+
+	if err = tmpl.Execute(w, data); err != nil {
+		a.logg.LogE(msg.ESS500, err, logg.SkipNofS)
+
+		return
+	}
+
 }

@@ -1,10 +1,53 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/web/css/auth.css" type="text/css">
     <title>Авторизация</title>
 </head>
 <body>
+<div class="login-container">
+    <h1>Авторизация</h1>
 
+    {{if .ErrorMessage}}
+    <div class="error" role="alert">
+        Ошибка: {{.ErrorMessage}}
+    </div>
+    {{end}}
+
+    <form method="POST" action="/auth" id="loginForm">
+        <div class="form-group">
+            <label for="performerTabNum">
+                Табельный номер:
+            </label>
+            <input
+                    type="number"
+                    id="performerTabNum"
+                    name="performerTabNum"
+                    required
+                    placeholder="Введите табельный номер"
+                    aria-required="true"
+            >
+        </div>
+
+        <div class="form-group">
+            <label for="performerPassword">
+                Пароль:
+            </label>
+            <input
+                    type="password"
+                    id="performerPassword"
+                    name="performerPassword"
+                    required
+                    placeholder="Введите пароль"
+                    aria-required="true"
+            >
+        </div>
+
+        <input type="submit" value="Войти" aria-label="Войти в систему">
+    </form>
+</div>
+<script src="/web/js/auth.js"></script>
 </body>
 </html>

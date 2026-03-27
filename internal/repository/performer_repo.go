@@ -56,23 +56,12 @@ func (p *PerformerRepo) FindByTabNum(ctx context.Context, tabNum int) (*entity.P
 	var performer entity.Performer
 
 	if err := p.mssql.QueryRowContext(ctx, svPerformerFindByTabNumQuery, tabNum).Scan(
-		&performer.Id,
-		&performer.SectorId,
 		&performer.FIO,
 		&performer.TabNum,
-		&performer.Barcode,
-		&performer.AccessBarcode,
-		&performer.Passwd,
-		&performer.IssuedAt,
-		&performer.Archive,
 		&performer.PerformerRole.RoleIdAForms,
 		&performer.PerformerRole.RoleIdAFGW,
 		&performer.PerformerRole.RoleNameAForms,
 		&performer.PerformerRole.RoleNameAFGW,
-		&performer.AuditRec.CreatedAt,
-		&performer.AuditRec.CreatedBy,
-		&performer.AuditRec.UpdatedAt,
-		&performer.AuditRec.UpdatedBy,
 	); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			p.logg.LogEf(logg.SkipNofS, err, "%s: tabNum: %d", msg.ERS501, tabNum)

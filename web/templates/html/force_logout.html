@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ .Title }}</title>
+</head>
+<body>
+<div class="container">
+    <h2>{{ .Title }}</h2>
+
+    <div class="reason">
+        <p><strong>Причина:</strong> {{.Reason}}</p>
+        {{ if .Timestamp }}
+        <p><small>Время: {{ .Timestamp}}</small></p>
+        {{ end }}
+    </div>
+
+    <p>Ваша сессия была завершена по соображениям безопасности.</p>
+    <p>Для продолжения работы необходимо войти в систему заново.</p>
+
+    <p class="loading" id="status">Начало безопасного выхода...</p>
+
+    <noscript>
+        <div class="noscript-warning">
+            <p><strong>Внимание:</strong> JavaScript отключен в вашем браузере.</p>
+            <p>Для безопасного выхода и очистки истории браузера необходимо включить JavaScript.</p>
+            <p>Вы можете <a href="/login">перейти на страницу входа вручную</a>.</p>
+        </div>
+    </noscript>
+
+    <div style="margin-top: 30px; font-size: 14px; color: #999;">
+        <p>Если перенаправление не произошло автоматически в течение 3 секунд,
+            <a href="/login">нажмите здесь для перехода на страницу входа</a>.</p>
+    </div>
+</div>
+<script src="../../js/force_logout.js"></script>
+</body>
+</html>
