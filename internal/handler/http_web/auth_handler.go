@@ -207,6 +207,8 @@ func (a *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
 		SameSite: http.SameSiteStrictMode,
 	})
 
+	a.logg.LogI(msg.ISS203, logg.SkipNofS)
+
 	a.sendLogoutPageWithHistoryClear(w, r)
 }
 
@@ -242,7 +244,7 @@ func (a *AuthHandler) LoginPage(w http.ResponseWriter, r *http.Request) {
 	page.RenderPage(w, r, tmplAuthHTML, data)
 }
 
-// Обновленный sendLoginSuccessPage
+// Обновленный sendLoginSuccessPage.
 func (a *AuthHandler) sendLoginSuccessPage(w http.ResponseWriter, r *http.Request) {
 	target := urlAdmin
 
