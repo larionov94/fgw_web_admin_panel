@@ -37,6 +37,7 @@ func (h *HistoryRepo) AddEntryAndExit(ctx context.Context, performerData *entity
 		performerData.TraceId,
 		performerData.FIO,
 		performerData.RoleName,
+		performerData.EntryExit,
 		performerData.CreatedBy,
 	); err != nil {
 		h.logg.LogE(msg.ERS500, err, logg.SkipNofS)

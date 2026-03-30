@@ -128,7 +128,7 @@ func (m *AuthMiddleware) GetPerformerData(r *http.Request, performerService serv
 }
 
 // clearSessionCookie очищает куки сессии.
-func (m *AuthMiddleware) clearSessionCookie(w http.ResponseWriter, r *http.Request) {
+func (m *AuthMiddleware) clearSessionCookie(w http.ResponseWriter) {
 	cookie := &http.Cookie{
 		Name:     api.GetSessionName(),
 		Value:    "",
@@ -149,7 +149,7 @@ func (m *AuthMiddleware) CreateAuthSecuritySession(w http.ResponseWriter, r *htt
 	if err != nil {
 		m.logg.LogWf(logg.SkipNofS, "%s: %v", msg.WSS403, err)
 
-		m.clearSessionCookie(w, r)
+		m.clearSessionCookie(w)
 		session, _ = m.store.New(r, api.GetSessionName())
 	}
 
@@ -346,7 +346,6 @@ func (m *AuthMiddleware) SetSecurityHeaders(w http.ResponseWriter) {
 	w.Header().Set("X-Frame-Options", "DENY")
 }
 
-// TODO:доделать, вынести в общий метод
 // forceLogoutAndRedirect - принудительный выход и редирект с очисткой истории.
 func (m *AuthMiddleware) forceLogoutAndRedirect(w http.ResponseWriter, r *http.Request, reason string) {
 	m.logg.LogWf(logg.SkipNofS, "%s: %s ", msg.WSS402, reason)
@@ -366,11 +365,11 @@ func (m *AuthMiddleware) forceLogoutAndRedirect(w http.ResponseWriter, r *http.R
 
 	tmpl, err := template.ParseFiles(prefixTmpl + tmplForceLogoutHTML)
 	if err != nil {
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		http.Error(w, msg.EH5001, http.StatusInternalServerError)
 
 		return
 	}
-	// Устанавливаем заголовок ответа.
+
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	w.WriteHeader(http.StatusOK)
 
@@ -385,7 +384,7 @@ func (m *AuthMiddleware) forceLogoutAndRedirect(w http.ResponseWriter, r *http.R
 	}
 
 	if err = tmpl.Execute(w, data); err != nil {
-		http.Error(w, "", http.StatusInternalServerError)
+		http.Error(w, msg.EH5002, http.StatusInternalServerError)
 
 		return
 	}

@@ -3,6 +3,7 @@ package http_web
 import (
 	"fgw_web_admin_panel/internal/api"
 	"fgw_web_admin_panel/internal/api/middleware"
+	"fgw_web_admin_panel/internal/entity"
 	"fgw_web_admin_panel/internal/handler/page"
 	"fgw_web_admin_panel/internal/service"
 	"fgw_web_admin_panel/pkg/convert"
@@ -10,6 +11,9 @@ import (
 	"fgw_web_admin_panel/pkg/msg"
 	"net/http"
 	"net/url"
+	"time"
+
+	"github.com/hashicorp/go-uuid"
 )
 
 const (
@@ -22,7 +26,12 @@ const (
 	urlLogoutTempRedirect = "/logout-temp-redirect"
 	urlTempRedirect       = "/temp-redirect"
 	tmplStartPageHTML     = "index.html"
+
+	exitMsg  = "Выход"
+	entryMsg = "Вход"
 )
+
+var UUIDString string
 
 const (
 	RedirectDelayFast    = 100  // 0.1 секунда
@@ -45,12 +54,13 @@ type RedirectData struct {
 
 type AuthHandler struct {
 	performerService service.PerformerUseCase
+	historyService   service.HistoryUseCase
 	logg             *logg.Logger
 	authMiddleware   *middleware.AuthMiddleware
 }
 
-func NewAuthHandler(performerService service.PerformerUseCase, logg *logg.Logger, authMiddleware *middleware.AuthMiddleware) *AuthHandler {
-	return &AuthHandler{performerService, logg, authMiddleware}
+func NewAuthHandler(performerService service.PerformerUseCase, historyService service.HistoryUseCase, logg *logg.Logger, authMiddleware *middleware.AuthMiddleware) *AuthHandler {
+	return &AuthHandler{performerService, historyService, logg, authMiddleware}
 }
 
 func (a *AuthHandler) ServeHTTPRouter(mux *http.ServeMux) {
@@ -140,6 +150,31 @@ func (a *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		a.sendLogoutPageWithHistoryClear(w, r)
 
+		return
+	}
+
+	performerID, ok := session.Values[api.GetPerformerKey()].(int)
+	if !ok {
+		performerID = 0 // или другое значение по умолчанию
+	}
+
+	fio, _ := session.Values[api.GetPerformerFIOKey()].(string)
+	roleName, _ := session.Values[api.GetRoleAFormsNameKey()].(string)
+
+	history := &entity.HistoryPerformer{
+		PerformerId: performerID,
+		Hostname:    a.logg.HostName(),
+		IpAddress:   a.logg.IPAddr(),
+		TraceId:     UUIDString,
+		FIO:         fio,
+		RoleName:    roleName,
+		EntryExit:   exitMsg,
+		CreatedAt:   time.Now().Format("2006-01-02 15:04:05"),
+		CreatedBy:   performerID,
+	}
+
+	if err := a.historyService.AddHistoryOfEntryAndExit(r.Context(), history); err != nil {
+		a.logg.LogE("", err, logg.SkipNofS)
 		return
 	}
 
@@ -290,12 +325,39 @@ func (a *AuthHandler) renderRedirectPage(w http.ResponseWriter, r *http.Request,
 	page.RenderPage(w, r, tmplRedirectHTML, data)
 }
 
+func getUUIDStr() (string, error) {
+	return uuid.GenerateUUID()
+}
+
 func (a *AuthHandler) StartPage(w http.ResponseWriter, r *http.Request) {
 	performerData, err := a.authMiddleware.GetPerformerData(r, a.performerService)
 	if err != nil {
 		a.sendLogoutPageWithHistoryClear(w, r)
 
 		return
+	}
+
+	UUIDString, err = getUUIDStr()
+	if err != nil {
+		return
+	}
+
+	if performerData != nil {
+		if err := a.historyService.AddHistoryOfEntryAndExit(r.Context(), &entity.HistoryPerformer{
+			PerformerId: performerData.PerformerTabNum,
+			Hostname:    a.logg.HostName(),
+			IpAddress:   a.logg.IPAddr(),
+			TraceId:     UUIDString,
+			FIO:         performerData.PerformerFIO,
+			RoleName:    performerData.PerformerRoleAForms,
+			EntryExit:   entryMsg,
+			CreatedAt:   time.Now().Format("2006-01-02 15:04:05"),
+			CreatedBy:   performerData.PerformerTabNum,
+		}); err != nil {
+			a.logg.LogE("", err, logg.SkipNofS)
+
+			return
+		}
 	}
 
 	data := struct {

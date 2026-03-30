@@ -4,6 +4,7 @@ go 1.26.1
 
 require (
 	github.com/gorilla/sessions v1.4.0
+	github.com/hashicorp/go-uuid v1.0.3
 	github.com/joho/godotenv v1.5.1
 	github.com/microsoft/go-mssqldb v1.9.8
 )

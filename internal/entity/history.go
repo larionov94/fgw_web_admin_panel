@@ -8,6 +8,7 @@ type HistoryPerformer struct {
 	TraceId     string `json:"traceId"`
 	FIO         string `json:"fio"`
 	RoleName    string `json:"roleName"`
+	EntryExit   string `json:"entryExit"`
 	CreatedAt   string `json:"createdAt"`
-	CreatedBy   string `json:"createdBy"`
+	CreatedBy   int    `json:"createdBy"`
 }
