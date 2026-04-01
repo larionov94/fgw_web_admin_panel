@@ -1,44 +1,135 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns="http://www.w3.org/1999/html">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/web/libs/bootstrap.css" type="text/css">
+    <link rel="stylesheet" href="/web/css/admin.css" type="text/css">
+    <script src="/web/libs/bootstrap.bundle.js"></script>
+    <script src="/web/js/admin.js"></script>
+
     <title>{{ .Title }}</title>
 </head>
 <body>
+
+<nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom fixed-top shadow-sm">
+    <div class="container-fluid">
+        <!-- ------------------------- -->
+        <!--      Бренд/логотип        -->
+        <!-- ------------------------- -->
+        <a class="navbar-brand fw-bold fs-6" href="/admin">
+            🖥️️ Панель администратора
+        </a>
+        <!-- ------------------------- -->
+        <!-- Информация о пользователе -->
+        <!-- ------------------------- -->
+        <div class="user-dropdown d-none d-lg-block">
+            <div class="dropdown">
+                <!-- ------------------------------------------------------- -->
+                <!-- Отображение рамки и картинки внутри с табельным номером -->
+                <!-- ------------------------------------------------------- -->
+                <button class="btn btn-outline-secondary btn-sm dropdown-toggle px-2 py-1"
+                        type="button"
+                        data-bs-toggle="dropdown">👤 {{ .InfoPerformer.PerformerTabNum }}
+                </button>
+
+                <!-- Сепаратор -->
+                <div class="dropdown-menu dropdown-menu-end dropdown-user-info p-2" style="min-width: 320px;">
+
+                    <!-- Заголовок меню -->
+                    <div class="dropdown-user-header border-bottom text-center">
+                        <h6 class="fw-bold mb-0"
+                            style="font-size: 0.85rem;">👤 Информация о пользователе
+                        </h6>
+                    </div>
+
+                    <!-- Данные пользователя -->
+                    <div class="user-data-item mb-1">
+                        <div class="d-flex" style="font-size: 0.85rem;">
+                            <span class="fw-bold text-muted">Табельный номер:</span>
+                            <span class="user-data-value ms-2">{{ .InfoPerformer.PerformerTabNum }}</span>
+                        </div>
+                    </div>
+                    <div class="user-data-item mb-1">
+                        <div class="d-flex" style="font-size: 0.85rem;">
+                            <span class="fw-bold text-muted">Роль:</span>
+                            <span class="user-data-value ms-2">{{ .InfoPerformer.PerformerRoleAForms }}</span>
+                        </div>
+                    </div>
+                    <div class="user-data-item">
+                        <div class="d-flex" style="font-size: 0.85rem;">
+                            <span class="fw-bold text-muted">ФИО:</span>
+                            <span class="user-data-value ms-2">{{ .InfoPerformer.PerformerFIO }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Кнопка для мобильного меню -->
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarContent">
+            <!-- Навигационное меню -->
+            <ul class="navbar-nav me-auto">
+
+                <li class="nav-item">
+                    <a class="nav-link {{ if eq .CurrentPage `dashboard` }}active{{ end }}" href="/admin">
+                        <span>🏠</span>
+                        <span class="ms-0">Главная</span>
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link {{ if eq .CurrentPage `performers_list` }}active{{ end }}"
+                       href="/admin/performers">
+
+                        <span class="me-1" style="color: #ff9800;">
+                            <span>👤👤👤</span>
+                        </span>
+                        <span>Список сотрудников</span>
+                    </a>
+                </li>
+            </ul>
+
+            <!-- Правая часть меню -->
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link text-danger" href="/logout"
+                       onclick="return confirm('Вы уверены что хотите выйти?')">
+                        <span>🚪</span>
+                        <span class="ms-1">Выйти</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
 <!-- Основное содержимое -->
 <div class="main-content container-fluid mt-3">
-    {{ if eq .CurrentPage `dashboard` }}
 
-    <ul class="navbar-nav">
-        <li class="nav-item">
-            <a class="nav-link text-danger" href="/logout"
-               onclick="return confirm('Вы уверены что хотите выйти?')">
-                <span>🚪</span>
-                <span class="ms-1">Выйти</span>
-            </a>
-        </li>
-    </ul>
+    {{ if eq .CurrentPage `dashboard` }}
 
     <div class="mt-4">
         <h1 class="mb-4">Добро пожаловать, {{ .InfoPerformer.PerformerFIO }}</h1>
-        <h1 class="mb-4">Добро пожаловать, {{ .InfoPerformer.PerformerTabNum }}</h1>
-        <h1 class="mb-4">Добро пожаловать, {{ .InfoPerformer.PerformerRoleAForms }}</h1>
-        <h1 class="mb-4">Добро пожаловать, {{ .InfoPerformer.PerformerRoleAFormsId }}</h1>
-        <p class="lead">Вы вошли в систему как <strong></strong></p>
+        <h2 class="lead">Вы вошли в систему как <b>{{ .InfoPerformer.PerformerRoleAForms }}</b></h2>
     </div>
 
-
+    {{ else }}
     <!-- Страница по умолчанию или 404 -->
     <div class="alert alert-warning mt-5">
         <h4 class="alert-heading">Страница не найдена</h4>
         <p>Запрошенная страница не существует или временно недоступна.</p>
         <hr>
-        <a href="/admin" class="btn btn-outline-primary">Вернуться на главную</a>
+        <a href="/aforms" class="btn btn-outline-primary">Вернуться на главную</a>
     </div>
-
     {{ end }}
 
-
 </div>
+
 </body>
 </html>

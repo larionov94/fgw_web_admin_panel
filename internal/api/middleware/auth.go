@@ -17,8 +17,8 @@ import (
 const (
 	expiresCache        = 60 * time.Minute // expiresCache время жизни кэша.
 	maxAgeClearSession  = -1               // maxAgeClearSession устанавливает время жизни сессии.
-	maxAgeSession       = 4 * time.Hour    //  maxAgeSession устанавливает максимальное время жизни сессии.
-	prefixTmpl          = "web/html/templates"
+	maxAgeSession       = 15 * time.Minute //  maxAgeSession устанавливает максимальное время жизни сессии.
+	prefixTmpl          = "web/templates/html/"
 	tmplForceLogoutHTML = "force_logout.html"
 )
 

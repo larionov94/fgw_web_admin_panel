@@ -1,29 +1,27 @@
-<!-- templates/redirect.html -->
 <!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
     <title>{{.Title}}</title>
     <script>
-        (function() {
-            {{if .ClearHistory}}
+        (function () {
+
             // Очищаем историю
             if (window.history.replaceState) {
                 history.replaceState(null, '', '{{.CurrentURL}}');
                 history.pushState({authed: false}, '', '{{.TempURL}}');
                 history.back();
             }
-            {{end}}
-
+            
             // Редирект
-            setTimeout(function() {
+            setTimeout(function () {
                 window.location.replace('{{.TargetURL}}');
-            }, {{.Delay}});
+            },);
 
             // Фолбэк
-            setTimeout(function() {
+            setTimeout(function () {
                 window.location.replace('{{.TargetURL}}');
-            }, {{.FallbackDelay}});
+            },);
         })();
     </script>
 </head>

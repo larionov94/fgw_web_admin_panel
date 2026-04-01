@@ -29,6 +29,9 @@ const (
 
 	exitMsg  = "Выход"
 	entryMsg = "Вход"
+
+	titleAdminPanelPage = "Панель администратора"
+	pageAdminPanel      = "dashboard"
 )
 
 var UUIDString string
@@ -139,6 +142,28 @@ func (a *AuthHandler) AuthPerformerHTML(w http.ResponseWriter, r *http.Request) 
 
 			return
 		}
+
+		UUIDString, err = getUUIDStr()
+		if err != nil {
+			return
+		}
+
+		if err := a.historyService.AddHistoryOfEntryAndExit(r.Context(), &entity.HistoryPerformer{
+			PerformerId: authResult.Performer.TabNum,
+			Hostname:    a.logg.HostName(),
+			IpAddress:   a.logg.IPAddr(),
+			TraceId:     UUIDString,
+			FIO:         authResult.Performer.FIO,
+			RoleName:    authResult.Performer.PerformerRole.RoleNameAForms,
+			EntryExit:   entryMsg,
+			CreatedAt:   time.Now().Format("2006-01-02 15:04:05"),
+			CreatedBy:   authResult.Performer.TabNum,
+		}); err != nil {
+			a.logg.LogE("", err, logg.SkipNofS)
+
+			return
+
+		}
 		a.sendLoginSuccessPage(w, r)
 	} else {
 		http.Redirect(w, r, "/login?error="+url.QueryEscape(authResult.Message), http.StatusFound)
@@ -148,14 +173,14 @@ func (a *AuthHandler) AuthPerformerHTML(w http.ResponseWriter, r *http.Request) 
 func (a *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
 	session, err := api.Store.Get(r, api.GetSessionName())
 	if err != nil {
-		a.sendLogoutPageWithHistoryClear(w, r)
-
+		//a.sendLogoutPageWithHistoryClear(w, r)
+		http.Redirect(w, r, "/login", http.StatusFound)
 		return
 	}
 
 	performerID, ok := session.Values[api.GetPerformerKey()].(int)
 	if !ok {
-		performerID = 0 // или другое значение по умолчанию
+		performerID = 0
 	}
 
 	fio, _ := session.Values[api.GetPerformerFIOKey()].(string)
@@ -175,7 +200,6 @@ func (a *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
 
 	if err := a.historyService.AddHistoryOfEntryAndExit(r.Context(), history); err != nil {
 		a.logg.LogE("", err, logg.SkipNofS)
-		return
 	}
 
 	if token, ok := session.Values[api.GetTokenKey()].(string); ok {
@@ -339,36 +363,13 @@ func (a *AuthHandler) StartPage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	UUIDString, err = getUUIDStr()
-	if err != nil {
-		return
-	}
-
-	if performerData != nil {
-		if err := a.historyService.AddHistoryOfEntryAndExit(r.Context(), &entity.HistoryPerformer{
-			PerformerId: performerData.PerformerTabNum,
-			Hostname:    a.logg.HostName(),
-			IpAddress:   a.logg.IPAddr(),
-			TraceId:     UUIDString,
-			FIO:         performerData.PerformerFIO,
-			RoleName:    performerData.PerformerRoleAForms,
-			EntryExit:   entryMsg,
-			CreatedAt:   time.Now().Format("2006-01-02 15:04:05"),
-			CreatedBy:   performerData.PerformerTabNum,
-		}); err != nil {
-			a.logg.LogE("", err, logg.SkipNofS)
-
-			return
-		}
-	}
-
 	data := struct {
 		Title         string
 		CurrentPage   string
 		InfoPerformer *middleware.PerformerData
 	}{
-		Title:         "123",
-		CurrentPage:   "dashboard",
+		Title:         titleAdminPanelPage,
+		CurrentPage:   pageAdminPanel,
 		InfoPerformer: performerData,
 	}
 
