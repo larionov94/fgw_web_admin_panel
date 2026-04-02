@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fgw_web_admin_panel/internal/config/db"
 	"fgw_web_admin_panel/internal/entity"
 	"fgw_web_admin_panel/pkg/logg"
 	"fgw_web_admin_panel/pkg/msg"
@@ -23,6 +24,7 @@ func NewPerformerRepo(mssql *sql.DB, logger *logg.Logger) *PerformerRepo {
 type PerformerRepository interface {
 	AuthByTabNumAndPass(ctx context.Context, tabNum int, passwd string) (*entity.Performer, error)
 	FindByTabNum(ctx context.Context, tabNum int) (*entity.Performer, error)
+	All(ctx context.Context) ([]entity.Performer, error)
 }
 
 // AuthByTabNumAndPass аутентификация по табельному номеру и паролю.
@@ -75,4 +77,52 @@ func (p *PerformerRepo) FindByTabNum(ctx context.Context, tabNum int) (*entity.P
 	}
 
 	return &performer, nil
+}
+
+// All выводит список сотрудников.
+func (p *PerformerRepo) All(ctx context.Context) ([]*entity.Performer, error) {
+	rows, err := p.mssql.QueryContext(ctx, svPerformerAllQuery)
+	if err != nil {
+		p.logg.LogE(msg.ERS500, err, logg.SkipNofS)
+
+		return nil, err
+	}
+
+	defer db.CloseRows(rows, p.logg)
+
+	var performers []*entity.Performer
+	for rows.Next() {
+		var performer entity.Performer
+		if err = rows.Scan(
+			&performer.Id,
+			&performer.SectorId,
+			&performer.FIO,
+			&performer.TabNum,
+			&performer.Barcode,
+			&performer.AccessBarcode,
+			&performer.Passwd,
+			&performer.IssuedAt,
+			&performer.Archive,
+			&performer.PerformerRole.RoleIdAForms,
+			&performer.PerformerRole.RoleIdAFGW,
+			&performer.AuditRec.CreatedAt,
+			&performer.AuditRec.CreatedBy,
+			&performer.AuditRec.UpdatedAt,
+			&performer.AuditRec.UpdatedBy,
+		); err != nil {
+			p.logg.LogE(msg.ERS502, err, logg.SkipNofS)
+
+			return nil, err
+		}
+
+		performers = append(performers, &performer)
+	}
+
+	if err = rows.Err(); err != nil {
+		p.logg.LogE(msg.ERS503, err, logg.SkipNofS)
+
+		return nil, err
+	}
+
+	return performers, nil
 }

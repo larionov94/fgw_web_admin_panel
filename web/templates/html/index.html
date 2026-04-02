@@ -119,13 +119,17 @@
         <h2 class="lead">Вы вошли в систему как <b>{{ .InfoPerformer.PerformerRoleAForms }}</b></h2>
     </div>
 
+    {{ else if eq .CurrentPage `performers` }}
+    {{ template "performers_content" . }}
+
+
     {{ else }}
     <!-- Страница по умолчанию или 404 -->
     <div class="alert alert-warning mt-5">
         <h4 class="alert-heading">Страница не найдена</h4>
         <p>Запрошенная страница не существует или временно недоступна.</p>
         <hr>
-        <a href="/aforms" class="btn btn-outline-primary">Вернуться на главную</a>
+        <a href="/admin" class="btn btn-outline-primary">Вернуться на главную</a>
     </div>
     {{ end }}
 

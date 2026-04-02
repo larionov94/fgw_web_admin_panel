@@ -5,4 +5,5 @@ const svAFHistoryOfEntryAndExitAddQuery = "exec dbo.svAF_HistoryOfEntryAndExitAd
 const (
 	svPerformerAuthQuery         = "exec dbo.sv_PerformerAuthWithData ?, ?;" // svPerformerAuthQuery ХП проверяет аутентификацию сотрудника и хранит данные.
 	svPerformerFindByTabNumQuery = "exec dbo.sv_PerformerFindByTabNum ?;"    // svPerformerFindByTabNumQuery ХП ищет сотрудника по табельному номеру.
+	svPerformerAllQuery          = "exec dbo.sv_PerformersAll;"              // svPerformerAllQuery ХП отображает список сотрудников.
 )
