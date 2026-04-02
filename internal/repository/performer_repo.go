@@ -24,7 +24,7 @@ func NewPerformerRepo(mssql *sql.DB, logger *logg.Logger) *PerformerRepo {
 type PerformerRepository interface {
 	AuthByTabNumAndPass(ctx context.Context, tabNum int, passwd string) (*entity.Performer, error)
 	FindByTabNum(ctx context.Context, tabNum int) (*entity.Performer, error)
-	All(ctx context.Context) ([]entity.Performer, error)
+	All(ctx context.Context) ([]*entity.Performer, error)
 }
 
 // AuthByTabNumAndPass аутентификация по табельному номеру и паролю.
