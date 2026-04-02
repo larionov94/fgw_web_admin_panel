@@ -8,7 +8,7 @@
     <script src="/web/libs/bootstrap.bundle.js"></script>
     <script src="/web/js/admin.js"></script>
 
-    <title>{{ .Title }}</title>
+    <title>{{ .Page.Title }}</title>
 </head>
 <body>
 
@@ -30,7 +30,7 @@
                 <!-- ------------------------------------------------------- -->
                 <button class="btn btn-outline-secondary btn-sm dropdown-toggle px-2 py-1"
                         type="button"
-                        data-bs-toggle="dropdown">👤 {{ .InfoPerformer.PerformerTabNum }}
+                        data-bs-toggle="dropdown">👤 {{ .Page.InfoPerformer.PerformerTabNum }}
                 </button>
 
                 <!-- Сепаратор -->
@@ -47,19 +47,19 @@
                     <div class="user-data-item mb-1">
                         <div class="d-flex" style="font-size: 0.85rem;">
                             <span class="fw-bold text-muted">Табельный номер:</span>
-                            <span class="user-data-value ms-2">{{ .InfoPerformer.PerformerTabNum }}</span>
+                            <span class="user-data-value ms-2">{{ .Page.InfoPerformer.PerformerTabNum }}</span>
                         </div>
                     </div>
                     <div class="user-data-item mb-1">
                         <div class="d-flex" style="font-size: 0.85rem;">
                             <span class="fw-bold text-muted">Роль:</span>
-                            <span class="user-data-value ms-2">{{ .InfoPerformer.PerformerRoleAForms }}</span>
+                            <span class="user-data-value ms-2">{{ .Page.InfoPerformer.PerformerRoleAForms }}</span>
                         </div>
                     </div>
                     <div class="user-data-item">
                         <div class="d-flex" style="font-size: 0.85rem;">
                             <span class="fw-bold text-muted">ФИО:</span>
-                            <span class="user-data-value ms-2">{{ .InfoPerformer.PerformerFIO }}</span>
+                            <span class="user-data-value ms-2">{{ .Page.InfoPerformer.PerformerFIO }}</span>
                         </div>
                     </div>
                 </div>
@@ -77,14 +77,14 @@
             <ul class="navbar-nav me-auto">
 
                 <li class="nav-item">
-                    <a class="nav-link {{ if eq .CurrentPage `dashboard` }}active{{ end }}" href="/admin">
+                    <a class="nav-link {{ if eq .Page.CurrentPage `dashboard` }}active{{ end }}" href="/admin">
                         <span>🏠</span>
                         <span class="ms-0">Главная</span>
                     </a>
                 </li>
 
                 <li class="nav-item">
-                    <a class="nav-link {{ if eq .CurrentPage `performers_list` }}active{{ end }}"
+                    <a class="nav-link {{ if eq .Page.CurrentPage `performers_list` }}active{{ end }}"
                        href="/admin/performers">
 
                         <span class="me-1" style="color: #ff9800;">
@@ -112,14 +112,14 @@
 <!-- Основное содержимое -->
 <div class="main-content container-fluid mt-3">
 
-    {{ if eq .CurrentPage `dashboard` }}
+    {{ if eq .Page.CurrentPage `dashboard` }}
 
     <div class="mt-4">
-        <h1 class="mb-4">Добро пожаловать, {{ .InfoPerformer.PerformerFIO }}</h1>
-        <h2 class="lead">Вы вошли в систему как <b>{{ .InfoPerformer.PerformerRoleAForms }}</b></h2>
+        <h1 class="mb-4">Добро пожаловать, {{ .Page.InfoPerformer.PerformerFIO }}</h1>
+        <h2 class="lead">Вы вошли в систему как <b>{{ .Page.InfoPerformer.PerformerRoleAForms }}</b></h2>
     </div>
 
-    {{ else if eq .CurrentPage `performers` }}
+    {{ else if eq .Page.CurrentPage `performers` }}
     {{ template "performers_content" . }}
 
 

@@ -105,6 +105,8 @@ func (p *PerformerRepo) All(ctx context.Context) ([]*entity.Performer, error) {
 			&performer.Archive,
 			&performer.PerformerRole.RoleIdAForms,
 			&performer.PerformerRole.RoleIdAFGW,
+			&performer.PerformerRole.RoleNameAForms,
+			&performer.PerformerRole.RoleNameAFGW,
 			&performer.AuditRec.CreatedAt,
 			&performer.AuditRec.CreatedBy,
 			&performer.AuditRec.UpdatedAt,

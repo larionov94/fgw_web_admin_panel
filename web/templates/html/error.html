@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ .Title}} - Ошибка</title>
+    <title>{{ .ErrPage.Title}} - Ошибка</title>
     <style>
         * {
             margin: 0;
@@ -112,6 +112,9 @@
         <div class="error-message">
             <b>{{ .ErrPage.ErrMsg}}</b>
             <b>{{ .ErrPage.MsgCode}}</b>
+            <b>{{ .ErrPage.StatusCode}}</b>
+            <b>{{ .ErrPage.Method}}</b>
+            <b>{{ .ErrPage.Path}}</b>
         </div>
         <p>Пожалуйста, исправьте ошибку и попробуйте снова.</p>
     </div>

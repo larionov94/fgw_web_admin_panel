@@ -58,10 +58,12 @@ func StartApplication() {
 	servicePerformer := service.NewPerformerService(repoPerformer, logger)
 	serviceHistory := service.NewHistoryService(repoHistory, logger)
 
-	handlerPerformer := http_web.NewAuthHandler(servicePerformer, serviceHistory, logger, authMiddleware)
+	handlerPerformerAuth := http_web.NewAuthHandler(servicePerformer, serviceHistory, logger, authMiddleware)
+	handlerPerformer := http_web.NewPerformerHandler(servicePerformer, logger, authMiddleware)
 
 	mux := http.NewServeMux()
 
+	handlerPerformerAuth.ServeHTTPRouter(mux)
 	handlerPerformer.ServeHTTPRouter(mux)
 
 	mux.Handle("/web/", http.StripPrefix("/web/", http.FileServer(http.Dir("web/"))))

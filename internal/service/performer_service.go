@@ -20,7 +20,7 @@ func NewPerformerService(performerRepo repository.PerformerRepository, logg *log
 type PerformerUseCase interface {
 	AuthPerformerWithData(ctx context.Context, tabNum int, passwd string) (*entity.PerformerAuth, error)
 	FindPerformerByTabNum(ctx context.Context, tabNum int) (*entity.Performer, error)
-	AllPerformers(ctx context.Context) (*[]entity.Performer, error)
+	AllPerformers(ctx context.Context) ([]*entity.Performer, error)
 }
 
 // AuthPerformerWithData бизнес-логика аутентификации сотрудника с данными.

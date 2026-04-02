@@ -2,6 +2,8 @@ package page
 
 import (
 	"fgw_web_admin_panel/internal/api/middleware"
+	"fgw_web_admin_panel/internal/entity"
+	"fgw_web_admin_panel/pkg/convert"
 	"fgw_web_admin_panel/pkg/msg"
 	"fmt"
 	"html/template"
@@ -25,9 +27,10 @@ type ErrorPage struct {
 }
 
 type Page struct {
-	Title         string                    // Title название страницы.
-	CurrentPage   string                    // CurrentPage ключ страницы для отображения.
-	InfoPerformer *middleware.PerformerData // InfoPerformer информация о сотруднике.
+	Title          string                    // Title название страницы.
+	CurrentPage    string                    // CurrentPage ключ страницы для отображения.
+	InfoPerformer  *middleware.PerformerData // InfoPerformer информация о сотруднике.
+	PerformersList []*entity.Performer
 }
 
 type DataPage struct {
@@ -72,13 +75,16 @@ func RenderPage(w http.ResponseWriter, r *http.Request, tmpl string, data interf
 
 // RenderPages отображение страниц связанные между собой.
 func RenderPages(w http.ResponseWriter, r *http.Request, tmpl string, data interface{}, addTmpl ...string) {
-	pathToTemplates := []string{fmt.Sprintf("%s%s", pathToTmplDefault, tmpl)}
+	pathToTemplates := []string{fmt.Sprintf("%s%s%s", pathToTmplDefault, prefixAFormsTmpl, tmpl)}
 
 	for _, templates := range addTmpl {
 		pathToTemplates = append(pathToTemplates, fmt.Sprintf("%s%s%s", pathToTmplDefault, prefixAFormsTmpl, templates))
 	}
 
-	parseTmpl, err := template.New(tmpl).Funcs(template.FuncMap{}).ParseFiles(pathToTemplates...)
+	parseTmpl, err := template.New(tmpl).Funcs(template.FuncMap{
+		"formatDateTime": convert.FormatDateTime,
+		"formatDate":     convert.FormatDate,
+	}).ParseFiles(pathToTemplates...)
 	if err != nil {
 		renderErrorDirectly(w, ErrorPage{
 			Title:      "Ошибка",

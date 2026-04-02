@@ -1,0 +1,83 @@
+{{ define "performers_content" }}
+
+
+<div class="d-flex justify-content-between align-items-center mt-2">
+    <h1 class="h4 mb-3">{{ .Page.Title }}</h1>
+</div>
+
+<div class="card shadow">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <div style="height: calc(100vh - 300px); overflow-y: auto; position:relative;">
+                <table class="table table-hover mb-0" style="min-width: 1100px;" id="performerTable">
+
+                    <!-- Размер столбцов -->
+                    <colgroup>
+<!--                        <col style="width: 40px">-->
+<!--                        <col style="width: 100px">-->
+                    </colgroup>
+                    <!-- Шапка таблицы -->
+                    <thead class="table-light"
+                           style="position: sticky; top: 0; z-index: 10; background-color: #f8f9fa;">
+
+                    <tr>
+                        <th class="text-nowrap text-center">ИД <br>печки</th>
+                        <th class="text-nowrap text-center">ФИО</th>
+                        <th class="text-nowrap text-center">ТН</th>
+                        <th class="text-nowrap text-center">Код <br> пропуска</th>
+                        <th class="text-nowrap text-center">Доступ к<br> сканеру</th>
+                        <th class="text-nowrap text-center">Пароль</th>
+                        <th class="text-nowrap text-center">Дата допуска <br>к сканеру</th>
+                        <th class="text-nowrap text-center">Архив</th>
+                        <th class="text-nowrap text-center">Роль <br> АФормс</th>
+                        <th class="text-nowrap text-center">Роль <br> ТЛК</th>
+                        <th class="text-nowrap text-center">Дата <br> записи</th>
+                        <th class="text-nowrap text-center">ТН <br> создателя</th>
+                        <th class="text-nowrap text-center">Дата <br> изменения</th>
+                        <th class="text-nowrap text-center">ТН <br> создателя</th>
+                        <th class="text-nowrap text-center">Панель <br> операций</th>
+                    </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                    {{ range .Page.PerformersList }}
+                    <tr>
+
+                        <td class="text-center">{{ .SectorId }}</td>
+                        <td>{{ .FIO }}</td>
+                        <td class="text-center">{{ .TabNum }}</td>
+                        <td class="text-center">{{ .Barcode }}</td>
+                        <td class="text-center">{{ .AccessBarcode }}</td>
+                        <td class="text-center">{{ .Passwd }}</td>
+                        <td class="text-center">{{ formatDateTime .IssuedAt }}</td>
+                        <td class="text-center">{{ .Archive }}</td>
+                        <td class="text-center">{{ .PerformerRole.RoleNameAForms }}</td>
+                        <td class="text-center">{{ .PerformerRole.RoleNameAFGW }}</td>
+                        <td class="text-center">{{ formatDateTime .AuditRec.CreatedAt }}</td>
+                        <td class="text-center">{{ .AuditRec.CreatedBy }}</td>
+                        <td class="text-center">{{ formatDateTime .AuditRec.UpdatedAt }}</td>
+                        <td class="text-center">{{ .AuditRec.UpdatedBy }}</td>
+
+                        <td>
+                            <div class="d-flex justify-content-center gap-1">
+                                <!-- Кнопка редактирования -->
+                                <button class="btn btn-sm btn-outline-primary edit-btn px-1 py-1"
+                                        title="Редактировать"
+                                        onclick="window.open('/admin/performers/upd?idPerformer={{ .Id }}', '_self')">
+                                    <span>✏️</span>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {{ end }}
+
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{ end }}

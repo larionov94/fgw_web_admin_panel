@@ -143,16 +143,18 @@ func (a *AuthHandler) AuthPerformerHTML(w http.ResponseWriter, r *http.Request) 
 			return
 		}
 
-		UUIDString, err = getUUIDStr()
+		UUIDStr, err := uuid.GenerateUUID()
 		if err != nil {
 			return
 		}
+
+		SetUUIDStr(UUIDStr)
 
 		if err := a.historyService.AddHistoryOfEntryAndExit(r.Context(), &entity.HistoryPerformer{
 			PerformerId: authResult.Performer.TabNum,
 			Hostname:    a.logg.HostName(),
 			IpAddress:   a.logg.IPAddr(),
-			TraceId:     UUIDString,
+			TraceId:     UUIDStr,
 			FIO:         authResult.Performer.FIO,
 			RoleName:    authResult.Performer.PerformerRole.RoleNameAForms,
 			EntryExit:   entryMsg,
@@ -363,17 +365,23 @@ func (a *AuthHandler) StartPage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data := struct {
-		Title         string
-		CurrentPage   string
-		InfoPerformer *middleware.PerformerData
-	}{
+	data := page.NewDataPage(&page.Page{
 		Title:         titleAdminPanelPage,
 		CurrentPage:   pageAdminPanel,
 		InfoPerformer: performerData,
-	}
+	})
 
-	page.RenderPage(w, r, tmplStartPageHTML, data)
+	page.RenderPages(w, r, tmplStartPageHTML, data, tmplPerformerHTML)
 
 	return
+}
+
+// SetUUIDStr устанавливает текущий trace_id
+func SetUUIDStr(uuidStr string) {
+	UUIDString = uuidStr
+}
+
+// GetUUIDStr возвращает текущий trace_id.
+func GetUUIDStr() string {
+	return UUIDString
 }
