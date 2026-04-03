@@ -22,6 +22,7 @@ type PerformerUseCase interface {
 	FindPerformerByTabNum(ctx context.Context, tabNum int) (*entity.Performer, error)
 	AllPerformers(ctx context.Context) ([]*entity.Performer, error)
 	UpdPerformer(ctx context.Context, id int, performer *entity.Performer) error
+	FindPerformerById(ctx context.Context, id int) (*entity.Performer, error)
 }
 
 // AuthPerformerWithData бизнес-логика аутентификации сотрудника с данными.
@@ -105,4 +106,16 @@ func (p *PerformerService) UpdPerformer(ctx context.Context, id int, performer *
 	}
 
 	return nil
+}
+
+// FindPerformerById ищет сотрудника по id.
+func (p *PerformerService) FindPerformerById(ctx context.Context, id int) (*entity.Performer, error) {
+	performer, err := p.performerRepo.FindById(ctx, id)
+	if err != nil {
+		p.logg.LogE(msg.ESR500, err, logg.SkipNofS)
+
+		return nil, err
+	}
+
+	return performer, nil
 }

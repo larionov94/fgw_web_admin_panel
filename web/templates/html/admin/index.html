@@ -122,6 +122,9 @@
     {{ else if eq .Page.CurrentPage `performers` }}
     {{ template "performers_content" . }}
 
+    {{ else if eq .Page.CurrentPage `performer_upd` }}
+    {{ template "performer_upd_content" . }}
+
 
     {{ else }}
     <!-- Страница по умолчанию или 404 -->

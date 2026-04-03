@@ -2,6 +2,7 @@ package convert
 
 import (
 	"log"
+	"net/http"
 	"strconv"
 )
 
@@ -15,4 +16,23 @@ func ConvStrToInt(str string) (int, error) {
 	}
 
 	return value, nil
+}
+
+// ParseFormFieldInt преобразует поле в целое число, полученное из HTTP запроса.
+func ParseFormFieldInt(r *http.Request, fieldName string) int {
+
+	formValue := r.FormValue(fieldName)
+	if formValue == "" {
+		formValue = "0"
+
+		return 0
+	}
+	value, err := strconv.Atoi(formValue)
+	if err != nil {
+		log.Printf("Ошибка: [%s] --- поле: [%s] --- значение: [%v]", err.Error(), fieldName, value)
+
+		return 0
+	}
+
+	return value
 }

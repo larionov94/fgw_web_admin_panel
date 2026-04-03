@@ -353,10 +353,6 @@ func (a *AuthHandler) renderRedirectPage(w http.ResponseWriter, r *http.Request,
 	page.RenderPage(w, r, tmplRedirectHTML, data)
 }
 
-func getUUIDStr() (string, error) {
-	return uuid.GenerateUUID()
-}
-
 func (a *AuthHandler) StartPage(w http.ResponseWriter, r *http.Request) {
 	performerData, err := a.authMiddleware.GetPerformerData(r, a.performerService)
 	if err != nil {
@@ -371,7 +367,7 @@ func (a *AuthHandler) StartPage(w http.ResponseWriter, r *http.Request) {
 		InfoPerformer: performerData,
 	})
 
-	page.RenderPages(w, r, tmplStartPageHTML, data, tmplPerformerHTML)
+	page.RenderPages(w, r, tmplStartPageHTML, data, tmplPerformerHTML, tmplPerformerUpdHTML)
 
 	return
 }

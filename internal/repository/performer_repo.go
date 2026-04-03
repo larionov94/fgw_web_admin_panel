@@ -26,6 +26,7 @@ type PerformerRepository interface {
 	FindByTabNum(ctx context.Context, tabNum int) (*entity.Performer, error)
 	All(ctx context.Context) ([]*entity.Performer, error)
 	Upd(ctx context.Context, id int, performer *entity.Performer) error
+	FindById(ctx context.Context, id int) (*entity.Performer, error)
 }
 
 // AuthByTabNumAndPass аутентификация по табельному номеру и паролю.
@@ -145,4 +146,34 @@ func (p *PerformerRepo) Upd(ctx context.Context, id int, performer *entity.Perfo
 	}
 
 	return nil
+}
+
+func (p *PerformerRepo) FindById(ctx context.Context, id int) (*entity.Performer, error) {
+	var performer entity.Performer
+
+	if err := p.mssql.QueryRowContext(ctx, svPerformerFindByIdQuery, id).Scan(
+		&performer.Id,
+		&performer.SectorId,
+		&performer.FIO,
+		&performer.TabNum,
+		&performer.Barcode,
+		&performer.AccessBarcode,
+		&performer.IssuedAt,
+		&performer.PerformerRole.RoleIdAForms,
+		&performer.PerformerRole.RoleIdAFGW,
+		&performer.PerformerRole.RoleNameAForms,
+		&performer.PerformerRole.RoleNameAFGW,
+	); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			p.logg.LogEf(logg.SkipNofS, err, "%s", msg.ERS501)
+
+			return nil, err
+		}
+
+		p.logg.LogE(msg.ERS500, err, logg.SkipNofS)
+
+		return nil, err
+	}
+
+	return &performer, nil
 }

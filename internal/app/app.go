@@ -53,13 +53,15 @@ func StartApplication() {
 
 	defer db.Close(mssqlDB, logger)
 	repoPerformer := repository.NewPerformerRepo(mssqlDB, logger)
+	repoRole := repository.NewRoleRepo(mssqlDB, logger)
 	repoHistory := repository.NewHistoryRepo(mssqlDB, logger)
 
 	servicePerformer := service.NewPerformerService(repoPerformer, logger)
+	serviceRole := service.NewRoleService(repoRole, logger)
 	serviceHistory := service.NewHistoryService(repoHistory, logger)
 
 	handlerPerformerAuth := http_web.NewAuthHandler(servicePerformer, serviceHistory, logger, authMiddleware)
-	handlerPerformer := http_web.NewPerformerHandler(servicePerformer, logger, authMiddleware)
+	handlerPerformer := http_web.NewPerformerHandler(servicePerformer, serviceRole, logger, authMiddleware)
 
 	mux := http.NewServeMux()
 
