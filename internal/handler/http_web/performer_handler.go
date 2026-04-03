@@ -217,11 +217,6 @@ func (p *PerformerHandler) postUpdPerformerPage(w http.ResponseWriter, r *http.R
 	}
 
 	fieldAccessBarcode := r.FormValue("AccessBarcode")
-	fieldIssuedAt := convert.ParseToMSSQLDateTime(r.FormValue("IssuedAt"))
-
-	if fieldAccessBarcode == "" {
-		fieldIssuedAt = nil
-	}
 
 	performer := &entity.Performer{
 		SectorId:      convert.ParseFormFieldInt(r, "SectorId"),
@@ -230,7 +225,6 @@ func (p *PerformerHandler) postUpdPerformerPage(w http.ResponseWriter, r *http.R
 			RoleIdAForms: convert.ParseFormFieldInt(r, "RoleIdAForms"),
 			RoleIdAFGW:   convert.ParseFormFieldInt(r, "RoleIdAFGW"),
 		},
-		IssuedAt: fieldIssuedAt,
 		AuditRec: entity.Audit{
 			UpdatedBy: performerData.PerformerTabNum,
 		},

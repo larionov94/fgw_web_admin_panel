@@ -138,7 +138,6 @@ func (p *PerformerRepo) Upd(ctx context.Context, id int, performer *entity.Perfo
 		performer.AccessBarcode,
 		performer.PerformerRole.RoleIdAForms,
 		performer.PerformerRole.RoleIdAFGW,
-		performer.IssuedAt,
 		performer.AuditRec.UpdatedBy,
 	); err != nil {
 		p.logg.LogE(msg.ERS500, err, logg.SkipNofS)

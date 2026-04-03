@@ -24,14 +24,11 @@ func FormatDate(t *time.Time) string {
 	return t.Format("02.01.2006")
 }
 
-func ParseToMSSQLDateTime(goDateTime string) *time.Time {
-	if goDateTime == "" {
-		return nil
-	}
+func ParseToMSSQLDateTime(date string) *time.Time {
 
-	goDateTime = strings.TrimSpace(goDateTime)
+	date = strings.TrimSpace(date)
 
-	goDateTime = strings.Replace(goDateTime, "T", " ", 1)
+	date = strings.Replace(date, "T", " ", 1)
 
 	var t time.Time
 	var err error
@@ -45,14 +42,14 @@ func ParseToMSSQLDateTime(goDateTime string) *time.Time {
 	}
 
 	for _, layout := range layouts {
-		t, err = time.Parse(layout, goDateTime)
+		t, err = time.Parse(layout, date)
 		if err == nil {
 			break
 		}
 	}
 
 	if err != nil {
-		log.Printf("Ошибка: [%s] --- поле: [%s]", err.Error(), goDateTime)
+		log.Printf("Ошибка: [%s] --- поле: [%s]", err.Error(), date)
 	}
 
 	return &t

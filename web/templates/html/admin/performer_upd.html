@@ -69,14 +69,7 @@
                 </label>
             </div>
 
-            <div class="col-2 mb-1">
-                <label for="IssuedAt" class="form-label mb-0 fs-6">Дата допуска к сканеру</label>
-                <input type="date"
-                       class="form-control form-control-sm py-1"
-                       id="IssuedAt"
-                       name="IssuedAt"
-                       value="{{ $performers.IssuedAt }}">
-            </div>
+
 
             <div class="col-2 mb-1">
                 <label for="RoleIdAForms">Роль Аформс
@@ -105,10 +98,12 @@
             </div>
 
         </div>
-
         <div class="form-actions">
             <button type="submit" class="btn btn-success" id="updPerformer">
                 <i class="bi bi-check-circle"></i> Обновить сотрудника
+            </button>
+            <button type="button" class="btn btn-secondary" onclick="window.history.back()">
+                <i class="bi bi-arrow-left"></i> Отмена
             </button>
         </div>
 
