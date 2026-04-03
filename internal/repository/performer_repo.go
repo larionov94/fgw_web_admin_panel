@@ -25,6 +25,7 @@ type PerformerRepository interface {
 	AuthByTabNumAndPass(ctx context.Context, tabNum int, passwd string) (*entity.Performer, error)
 	FindByTabNum(ctx context.Context, tabNum int) (*entity.Performer, error)
 	All(ctx context.Context) ([]*entity.Performer, error)
+	Upd(ctx context.Context, id int, performer *entity.Performer) error
 }
 
 // AuthByTabNumAndPass аутентификация по табельному номеру и паролю.
@@ -127,4 +128,21 @@ func (p *PerformerRepo) All(ctx context.Context) ([]*entity.Performer, error) {
 	}
 
 	return performers, nil
+}
+
+// Upd обновляет сотрудника по ид.
+func (p *PerformerRepo) Upd(ctx context.Context, id int, performer *entity.Performer) error {
+	if _, err := p.mssql.ExecContext(ctx, svPerformerUpdQuery, id,
+		performer.AccessBarcode,
+		performer.PerformerRole.RoleIdAForms,
+		performer.PerformerRole.RoleIdAFGW,
+		performer.IssuedAt,
+		performer.AuditRec.UpdatedBy,
+	); err != nil {
+		p.logg.LogE(msg.ERS500, err, logg.SkipNofS)
+
+		return err
+	}
+
+	return nil
 }

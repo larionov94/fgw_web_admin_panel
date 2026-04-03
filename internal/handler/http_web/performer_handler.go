@@ -17,19 +17,22 @@ const (
 )
 
 type PerformerHandler struct {
-	performerService *service.PerformerService
+	performerService service.PerformerUseCase
+	roleService      service.RoleUseCase
 	logg             *logg.Logger
 	authMiddleware   *middleware.AuthMiddleware
 }
 
-func NewPerformerHandler(performerService *service.PerformerService, logg *logg.Logger, authMiddleware *middleware.AuthMiddleware) *PerformerHandler {
-	return &PerformerHandler{performerService, logg, authMiddleware}
+func NewPerformerHandler(performerService service.PerformerUseCase, roleService service.RoleUseCase, logg *logg.Logger, authMiddleware *middleware.AuthMiddleware) *PerformerHandler {
+	return &PerformerHandler{performerService, roleService, logg, authMiddleware}
 }
 
 func (p *PerformerHandler) ServeHTTPRouter(mux *http.ServeMux) {
 	mux.HandleFunc("/admin/performers", p.authMiddleware.RequireAuth(p.authMiddleware.RequireRoleForAForms([]int{0}, p.ShowPerformersPage)))
+	mux.HandleFunc("/admin/performers/upd", p.authMiddleware.RequireAuth(p.authMiddleware.RequireRoleForAForms([]int{0}, p.UpdPerformersPage)))
 }
 
+// ShowPerformersPage отображает список сотрудников на веб странице.
 func (p *PerformerHandler) ShowPerformersPage(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
@@ -74,4 +77,20 @@ func (p *PerformerHandler) ShowPerformersPage(w http.ResponseWriter, r *http.Req
 	})
 
 	page.RenderPages(w, r, tmplStartPageHTML, data, tmplPerformerHTML)
+}
+
+func (p *PerformerHandler) UpdPerformersPage(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+
+	if r.Method != http.MethodPost {
+		page.RenderPageError(w, r, page.ErrorPage{
+			MsgCode:    msg.EH5006,
+			StatusCode: http.StatusMethodNotAllowed,
+			Method:     r.Method,
+			Path:       r.URL.Path,
+		})
+
+		return
+	}
+
 }
