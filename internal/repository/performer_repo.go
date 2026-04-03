@@ -134,6 +134,7 @@ func (p *PerformerRepo) All(ctx context.Context) ([]*entity.Performer, error) {
 // Upd обновляет сотрудника по ид.
 func (p *PerformerRepo) Upd(ctx context.Context, id int, performer *entity.Performer) error {
 	if _, err := p.mssql.ExecContext(ctx, svPerformerUpdQuery, id,
+		performer.SectorId,
 		performer.AccessBarcode,
 		performer.PerformerRole.RoleIdAForms,
 		performer.PerformerRole.RoleIdAFGW,

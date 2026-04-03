@@ -28,12 +28,13 @@ const (
 type PerformerHandler struct {
 	performerService service.PerformerUseCase
 	roleService      service.RoleUseCase
+	sectorService    service.SectorUseCase
 	logg             *logg.Logger
 	authMiddleware   *middleware.AuthMiddleware
 }
 
-func NewPerformerHandler(performerService service.PerformerUseCase, roleService service.RoleUseCase, logg *logg.Logger, authMiddleware *middleware.AuthMiddleware) *PerformerHandler {
-	return &PerformerHandler{performerService, roleService, logg, authMiddleware}
+func NewPerformerHandler(performerService service.PerformerUseCase, roleService service.RoleUseCase, sectorService service.SectorUseCase, logg *logg.Logger, authMiddleware *middleware.AuthMiddleware) *PerformerHandler {
+	return &PerformerHandler{performerService, roleService, sectorService, logg, authMiddleware}
 }
 
 func (p *PerformerHandler) ServeHTTPRouter(mux *http.ServeMux) {
@@ -144,11 +145,37 @@ func (p *PerformerHandler) getUpdPerformerPage(w http.ResponseWriter, r *http.Re
 		return
 	}
 
+	roles, err := p.roleService.AllRoles(r.Context())
+	if err != nil {
+		page.RenderPageError(w, r, page.ErrorPage{
+			MsgCode:    msg.EH5013,
+			StatusCode: http.StatusInternalServerError,
+			Method:     r.Method,
+			Path:       r.URL.Path,
+		})
+
+		return
+	}
+
+	sectors, err := p.sectorService.AllSectors(r.Context())
+	if err != nil {
+		page.RenderPageError(w, r, page.ErrorPage{
+			MsgCode:    msg.EH5013,
+			StatusCode: http.StatusInternalServerError,
+			Method:     r.Method,
+			Path:       r.URL.Path,
+		})
+
+		return
+	}
+
 	data := page.NewDataPage(&page.Page{
 		Title:          titlePerformerUpdPage,
 		CurrentPage:    pagePerformerUpdPanel,
 		InfoPerformer:  performerData,
 		PerformersList: []*entity.Performer{performer},
+		RolesList:      roles,
+		SectorsList:    sectors,
 	})
 
 	page.RenderPages(w, r, tmplStartPageHTML, data, tmplPerformerHTML, tmplPerformerUpdHTML)
@@ -197,6 +224,7 @@ func (p *PerformerHandler) postUpdPerformerPage(w http.ResponseWriter, r *http.R
 	}
 
 	performer := &entity.Performer{
+		SectorId:      convert.ParseFormFieldInt(r, "SectorId"),
 		AccessBarcode: &fieldAccessBarcode,
 		PerformerRole: entity.PerformerRole{
 			RoleIdAForms: convert.ParseFormFieldInt(r, "RoleIdAForms"),

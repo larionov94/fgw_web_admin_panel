@@ -1,5 +1,128 @@
 {{ define "performer_upd_content" }}
 
+{{ if .Page.PerformersList }}
+{{ $performers := index .Page.PerformersList 0 }}
+
+<div class="d-flex justify-content-between align-items-center mt-2">
+    <h1 class="h4 mb-3">{{ .Page.Title }}</h1>
+</div>
+
+
+<!-- Форма -->
+<form action="/admin/performers/upd" method="POST" id="performerUpdForm">
+
+    <!-- Основная информация -->
+    <div class="form-section mb-2">
+        <h3 class="mb-2 fs-6 fw-bold">Основная информация</h3>
+        <input type="hidden" name="id" value="{{ $performers.Id }}">
+
+        <div class="row g-0 flex-column">
+            <div class="col-2 mb-1">
+                <label for="SectorId">Участок упаковки
+                    <select class="form-select form-select-sm role-fgw-select"
+                            name="SectorId"
+                            id="SectorId">
+
+                        {{ range $.Page.SectorsList }}
+                        <option value="{{ .Id }}" {{ if eq .Id $performers.SectorId}}selected{{ end }}>{{ .NameSector }}</option> {{ end }}
+
+                    </select>
+                </label>
+            </div>
+
+            <div class="col-2 mb-1">
+                <label for="FIO" class="form-label mb-0 fs-6">ФИО</label>
+                <input type="text"
+                       class="form-control form-control-sm py-1"
+                       id="FIO"
+                       name="FIO"
+                       value="{{ $performers.FIO }}">
+            </div>
+
+            <div class="col-2 mb-1">
+                <label for="TabNum" class="form-label mb-0 fs-6">Табельный номер</label>
+                <input type="text"
+                       class="form-control form-control-sm py-1"
+                       id="TabNum"
+                       name="TabNum"
+                       value="{{ $performers.TabNum }}">
+            </div>
+
+            <div class="col-2 mb-1">
+                <label for="Barcode" class="form-label mb-0 fs-6">Код пропуска</label>
+                <input type="text"
+                       class="form-control form-control-sm py-1"
+                       id="Barcode"
+                       name="Barcode"
+                       value="{{ $performers.Barcode }}">
+            </div>
+
+            <div class="col-2 mb-1">
+                <label for="AccessBarcode" class="form-label mb-0 fs-6">Код пропуска к сканеру
+                <select class="form-control form-control-sm py-1"
+                       id="AccessBarcode"
+                       name="AccessBarcode">
+
+                    <option value="" selected></option>
+                    <option value="{{ $performers.Barcode }}">{{ $performers.Barcode }}</option>
+                </select>
+                </label>
+            </div>
+
+            <div class="col-2 mb-1">
+                <label for="IssuedAt" class="form-label mb-0 fs-6">Дата допуска к сканеру</label>
+                <input type="date"
+                       class="form-control form-control-sm py-1"
+                       id="IssuedAt"
+                       name="IssuedAt"
+                       value="{{ $performers.IssuedAt }}">
+            </div>
+
+            <div class="col-2 mb-1">
+                <label for="RoleIdAForms">Роль Аформс
+                <select class="form-select form-select-sm role-fgw-select"
+                        name="RoleIdAForms"
+                        id="RoleIdAForms">
+
+                    {{ range $.Page.RolesList }}
+                    <option value="{{ .Id }}" {{ if eq .Id $performers.PerformerRole.RoleIdAForms}}selected{{ end }}>{{ .NameRole }}</option> {{ end }}
+
+                </select>
+                </label>
+            </div>
+
+            <div class="col-2 mb-1">
+                <label for="RoleIdAFGW">Роль ТЛК
+                    <select class="form-select form-select-sm role-fgw-select"
+                            name="RoleIdAFGW"
+                            id="RoleIdAFGW">
+
+                        {{ range $.Page.RolesList }}
+                        <option value="{{ .Id }}" {{ if eq .Id $performers.PerformerRole.RoleIdAFGW}}selected{{ end }}>{{ .NameRole }}</option> {{ end }}
+
+                    </select>
+                </label>
+            </div>
+
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-success" id="updPerformer">
+                <i class="bi bi-check-circle"></i> Обновить сотрудника
+            </button>
+        </div>
+
+
+    </div>
+
+
+</form>
+
+{{ else }}
+<div class="alert alert-danger">
+    <p>Продукция не найдена</p>
+</div>
+{{ end }}
 
 
 {{ end }}
