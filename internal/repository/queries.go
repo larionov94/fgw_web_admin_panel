@@ -7,3 +7,5 @@ const (
 	svPerformerFindByTabNumQuery = "exec dbo.sv_PerformerFindByTabNum ?;"    // svPerformerFindByTabNumQuery ХП ищет сотрудника по табельному номеру.
 	svPerformerAllQuery          = "exec dbo.sv_PerformersAll;"              // svPerformerAllQuery ХП отображает список сотрудников.
 )
+
+const svRolesQuery = "exec dbo.sv_Roles;" // svRolesQuery ХП получает список ролей.

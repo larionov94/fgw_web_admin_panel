@@ -13,8 +13,9 @@
 
                     <!-- Размер столбцов -->
                     <colgroup>
-<!--                        <col style="width: 40px">-->
-<!--                        <col style="width: 100px">-->
+                        <col style="width: 40px">
+                        <col style="width: 400px">
+                        <col style="width: 50px">
                     </colgroup>
                     <!-- Шапка таблицы -->
                     <thead class="table-light"
@@ -22,13 +23,13 @@
 
                     <tr>
                         <th class="text-nowrap text-center">ИД <br>печки</th>
-                        <th class="text-nowrap text-center">ФИО</th>
-                        <th class="text-nowrap text-center">ТН</th>
+                        <th class="text-nowrap text-center align-middle">ФИО</th>
+                        <th class="text-nowrap text-center align-middle">ТН</th>
                         <th class="text-nowrap text-center">Код <br> пропуска</th>
                         <th class="text-nowrap text-center">Доступ к<br> сканеру</th>
-                        <th class="text-nowrap text-center">Пароль</th>
+                        <th class="text-nowrap text-center align-middle">Пароль</th>
                         <th class="text-nowrap text-center">Дата допуска <br>к сканеру</th>
-                        <th class="text-nowrap text-center">Архив</th>
+                        <th class="text-nowrap text-center align-middle">Архив</th>
                         <th class="text-nowrap text-center">Роль <br> АФормс</th>
                         <th class="text-nowrap text-center">Роль <br> ТЛК</th>
                         <th class="text-nowrap text-center">Дата <br> записи</th>
@@ -63,7 +64,7 @@
                         <td>
                             <div class="d-flex justify-content-center gap-1">
                                 <!-- Кнопка редактирования -->
-                                <button class="btn btn-sm btn-outline-primary edit-btn px-1 py-1"
+                                <button class="btn btn-sm btn-outline-primary edit-btn px-0 py-0"
                                         title="Редактировать"
                                         onclick="window.open('/admin/performers/upd?idPerformer={{ .Id }}', '_self')">
                                     <span>✏️</span>
