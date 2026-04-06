@@ -20,6 +20,7 @@ const (
 	maxAgeSession       = 15 * time.Minute //  maxAgeSession устанавливает максимальное время жизни сессии.
 	prefixTmpl          = "web/templates/html/"
 	tmplForceLogoutHTML = "force_logout.html"
+	urlAdminPage        = "/admin"
 )
 
 type UserSession struct {
@@ -250,7 +251,7 @@ func (m *AuthMiddleware) RequireRoleForAForms(requiredRoles []int, next http.Han
 
 		if !allowedRoles[performerRoleAFormsId] {
 			m.logg.LogHttpEf(http.StatusForbidden, r.Method, r.URL.Path, nil, logg.SkipNofS, "%s", msg.ESS510)
-			http.Error(w, http.StatusText(http.StatusForbidden), http.StatusForbidden)
+			http.Redirect(w, r, urlAdminPage, http.StatusForbidden)
 
 			return
 		}

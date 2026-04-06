@@ -39,7 +39,7 @@ func NewPerformerHandler(performerService service.PerformerUseCase, roleService 
 
 func (p *PerformerHandler) ServeHTTPRouter(mux *http.ServeMux) {
 	mux.HandleFunc("/admin/performers", p.authMiddleware.RequireAuth(p.authMiddleware.RequireRoleForAForms([]int{0}, p.ShowPerformersPage)))
-	mux.HandleFunc("/admin/performers/upd", p.authMiddleware.RequireAuth(p.authMiddleware.RequireRoleForAForms([]int{0}, p.UpdPerformerPage)))
+	mux.HandleFunc("/admin/performers/upd", p.authMiddleware.RequireAuth(p.authMiddleware.RequireRoleForAForms([]int{1}, p.UpdPerformerPage)))
 }
 
 // ShowPerformersPage отображает список сотрудников на веб странице.
