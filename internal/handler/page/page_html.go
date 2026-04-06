@@ -12,7 +12,7 @@ import (
 
 const (
 	pathToTmplDefault = "web/templates/html/"
-	prefixAFormsTmpl  = "admin/"
+	prefixAFormsTmpl  = "aforms/"
 	tmplErrorHTML     = "error.html"
 )
 

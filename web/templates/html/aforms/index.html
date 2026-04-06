@@ -4,10 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="/web/libs/bootstrap.css" type="text/css">
-    <link rel="stylesheet" href="/web/css/admin.css" type="text/css">
+    <link rel="stylesheet" href="/web/css/aforms.css" type="text/css">
     <script src="/web/libs/bootstrap.bundle.js"></script>
-    <script src="/web/js/admin.js"></script>
-    <script src="/web/js/performers.js"></script>
+    <script src="/web/js/aforms.js"></script>
 
     <title>{{ .Page.Title }}</title>
 </head>
@@ -18,8 +17,8 @@
         <!-- ------------------------- -->
         <!--      Бренд/логотип        -->
         <!-- ------------------------- -->
-        <a class="navbar-brand fw-bold fs-6" href="/admin">
-            🖥️️ Панель администратора
+        <a class="navbar-brand fw-bold fs-6" href="/aforms">
+            🖥️️ Панель форм-комплектов
         </a>
         <!-- ------------------------- -->
         <!-- Информация о пользователе -->
@@ -78,20 +77,9 @@
             <ul class="navbar-nav me-auto">
 
                 <li class="nav-item">
-                    <a class="nav-link {{ if eq .Page.CurrentPage `dashboard` }}active{{ end }}" href="/admin">
+                    <a class="nav-link {{ if eq .Page.CurrentPage `dashboard` }}active{{ end }}" href="/aforms">
                         <span>🏠</span>
                         <span class="ms-0">Главная</span>
-                    </a>
-                </li>
-
-                <li class="nav-item">
-                    <a class="nav-link {{ if eq .Page.CurrentPage `performers_list` }}active{{ end }}"
-                       href="/admin/performers">
-
-                        <span class="me-1" style="color: #ff9800;">
-                            <span>👤👤👤</span>
-                        </span>
-                        <span>Список сотрудников</span>
                     </a>
                 </li>
             </ul>
@@ -120,19 +108,13 @@
         <h2 class="lead">Вы вошли в систему как <b>{{ .Page.InfoPerformer.PerformerRoleAForms }}</b></h2>
     </div>
 
-    {{ else if eq .Page.CurrentPage `performers` }}
-    {{ template "performers_content" . }}
-
-    {{ else if eq .Page.CurrentPage `performer_upd` }}
-    {{ template "performer_upd_content" . }}
-    
     {{ else }}
     <!-- Страница по умолчанию или 404 -->
     <div class="alert alert-warning mt-5">
         <h4 class="alert-heading">Страница не найдена</h4>
         <p>Запрошенная страница не существует или временно недоступна.</p>
         <hr>
-        <a href="/admin" class="btn btn-outline-primary">Вернуться на главную</a>
+        <a href="/aforms" class="btn btn-outline-primary">Вернуться на главную</a>
     </div>
     {{ end }}
 

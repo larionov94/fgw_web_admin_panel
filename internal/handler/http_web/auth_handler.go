@@ -20,7 +20,7 @@ const (
 	tmplRedirectHTML = "redirect.html"
 	tmplAuthHTML     = "auth.html"
 
-	urlAdmin              = "/admin"
+	urlAforms             = "/aforms"
 	urlAuth               = "/auth"
 	urlLogin              = "/login"
 	urlLogoutTempRedirect = "/logout-temp-redirect"
@@ -30,8 +30,8 @@ const (
 	exitMsg  = "Выход"
 	entryMsg = "Вход"
 
-	titleAdminPanelPage = "Панель администратора"
-	pageAdminPanel      = "dashboard"
+	titleAformsPanelPage = "Панель форм-комплектов"
+	pageAformsPanel      = "dashboard"
 )
 
 var UUIDString string
@@ -71,7 +71,7 @@ func (a *AuthHandler) ServeHTTPRouter(mux *http.ServeMux) {
 	mux.HandleFunc("/login", a.LoginPage)
 	mux.HandleFunc("/auth", a.AuthPerformerHTML)
 	mux.HandleFunc("/logout", a.Logout)
-	mux.HandleFunc("/admin", a.authMiddleware.RequireAuth(a.authMiddleware.RequireRoleForAForms([]int{0}, a.StartPage)))
+	mux.HandleFunc("/aforms", a.authMiddleware.RequireAuth(a.authMiddleware.RequireRoleForAForms([]int{0}, a.StartPage)))
 }
 
 func (a *AuthHandler) AuthPerformerHTML(w http.ResponseWriter, r *http.Request) {
@@ -272,7 +272,7 @@ func (a *AuthHandler) LoginPage(w http.ResponseWriter, r *http.Request) {
 
 // Обновленный sendLoginSuccessPage.
 func (a *AuthHandler) sendLoginSuccessPage(w http.ResponseWriter, r *http.Request) {
-	target := urlAdmin
+	target := urlAforms
 
 	data := RedirectData{
 		Title:           "Успешный вход",
@@ -292,7 +292,7 @@ func (a *AuthHandler) sendLoginSuccessPage(w http.ResponseWriter, r *http.Reques
 
 // safeRedirectBasedOnRole с использованием общего шаблона
 func (a *AuthHandler) safeRedirectBasedOnRole(w http.ResponseWriter, r *http.Request) {
-	target := urlAdmin
+	target := urlAforms
 
 	data := RedirectData{
 		Title:           "Перенаправление",
@@ -362,12 +362,12 @@ func (a *AuthHandler) StartPage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data := page.NewDataPage(&page.Page{
-		Title:         titleAdminPanelPage,
-		CurrentPage:   pageAdminPanel,
+		Title:         titleAformsPanelPage,
+		CurrentPage:   pageAformsPanel,
 		InfoPerformer: performerData,
 	})
 
-	page.RenderPages(w, r, tmplStartPageHTML, data, tmplPerformerHTML, tmplPerformerUpdHTML)
+	page.RenderPages(w, r, tmplStartPageHTML, data)
 
 	return
 }
