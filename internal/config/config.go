@@ -1,9 +1,9 @@
 package config
 
 import (
-	"fgw_web_admin_panel/pkg"
-	"fgw_web_admin_panel/pkg/logg"
-	"fgw_web_admin_panel/pkg/msg"
+	"fgw_web_aforms_panel/pkg"
+	"fgw_web_aforms_panel/pkg/logg"
+	"fgw_web_aforms_panel/pkg/msg"
 	"fmt"
 	"os"
 )

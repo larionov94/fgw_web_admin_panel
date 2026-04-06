@@ -3,7 +3,7 @@ package logg
 import (
 	"bufio"
 	"encoding/json"
-	"fgw_web_admin_panel/pkg/msg"
+	"fgw_web_aforms_panel/pkg/msg"
 	"fmt"
 	"log"
 	"net"

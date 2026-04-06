@@ -3,7 +3,7 @@ package api
 import (
 	"crypto/rand"
 	"encoding/base64"
-	"fgw_web_admin_panel/pkg/msg"
+	"fgw_web_aforms_panel/pkg/msg"
 	"log"
 	"net/http"
 	"os"

@@ -1,14 +1,14 @@
 package http_web
 
 import (
-	"fgw_web_admin_panel/internal/api"
-	"fgw_web_admin_panel/internal/api/middleware"
-	"fgw_web_admin_panel/internal/entity"
-	"fgw_web_admin_panel/internal/handler/page"
-	"fgw_web_admin_panel/internal/service"
-	"fgw_web_admin_panel/pkg/convert"
-	"fgw_web_admin_panel/pkg/logg"
-	"fgw_web_admin_panel/pkg/msg"
+	"fgw_web_aforms_panel/internal/api"
+	"fgw_web_aforms_panel/internal/api/middleware"
+	"fgw_web_aforms_panel/internal/entity"
+	"fgw_web_aforms_panel/internal/handler/page"
+	"fgw_web_aforms_panel/internal/service"
+	"fgw_web_aforms_panel/pkg/convert"
+	"fgw_web_aforms_panel/pkg/logg"
+	"fgw_web_aforms_panel/pkg/msg"
 	"net/http"
 	"net/url"
 	"time"

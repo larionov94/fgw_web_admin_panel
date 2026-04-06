@@ -3,9 +3,9 @@ package repository
 import (
 	"context"
 	"database/sql"
-	"fgw_web_admin_panel/internal/entity"
-	"fgw_web_admin_panel/pkg/logg"
-	"fgw_web_admin_panel/pkg/msg"
+	"fgw_web_aforms_panel/internal/entity"
+	"fgw_web_aforms_panel/pkg/logg"
+	"fgw_web_aforms_panel/pkg/msg"
 )
 
 // HistoryRepo репозиторий для работы с БД.

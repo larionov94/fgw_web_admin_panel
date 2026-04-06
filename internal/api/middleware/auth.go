@@ -2,10 +2,10 @@ package middleware
 
 import (
 	"errors"
-	"fgw_web_admin_panel/internal/api"
-	"fgw_web_admin_panel/internal/service"
-	"fgw_web_admin_panel/pkg/logg"
-	"fgw_web_admin_panel/pkg/msg"
+	"fgw_web_aforms_panel/internal/api"
+	"fgw_web_aforms_panel/internal/service"
+	"fgw_web_aforms_panel/pkg/logg"
+	"fgw_web_aforms_panel/pkg/msg"
 	"html/template"
 	"net/http"
 	"sync"

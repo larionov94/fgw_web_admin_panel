@@ -1,4 +1,4 @@
-module fgw_web_admin_panel
+module fgw_web_aforms_panel
 
 go 1.26.1
 
