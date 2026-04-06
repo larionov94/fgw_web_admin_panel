@@ -26,13 +26,19 @@ type ErrorPage struct {
 	Path       string
 }
 
+type SearchByPerformersPage struct {
+	FIO    string
+	TabNum string
+}
+
 type Page struct {
-	Title          string                    // Title название страницы.
-	CurrentPage    string                    // CurrentPage ключ страницы для отображения.
-	InfoPerformer  *middleware.PerformerData // InfoPerformer информация о сотруднике.
-	PerformersList []*entity.Performer       // PerformersList список сотрудников.
-	RolesList      []*entity.Role            // RolesList список ролей.
-	SectorsList    []*entity.Sector          // SectorsList список участков печей.
+	Title             string                    // Title название страницы.
+	CurrentPage       string                    // CurrentPage ключ страницы для отображения.
+	InfoPerformer     *middleware.PerformerData // InfoPerformer информация о сотруднике.
+	PerformersList    []*entity.Performer       // PerformersList список сотрудников.
+	SearchByPerformer *SearchByPerformersPage   // SearchByPerformer поиск по сотрудникам
+	RolesList         []*entity.Role            // RolesList список ролей.
+	SectorsList       []*entity.Sector          // SectorsList список участков печей.
 }
 
 type DataPage struct {

@@ -24,7 +24,7 @@ func NewPerformerRepo(mssql *sql.DB, logger *logg.Logger) *PerformerRepo {
 type PerformerRepository interface {
 	AuthByTabNumAndPass(ctx context.Context, tabNum int, passwd string) (*entity.Performer, error)
 	FindByTabNum(ctx context.Context, tabNum int) (*entity.Performer, error)
-	All(ctx context.Context) ([]*entity.Performer, error)
+	AllWithParam(ctx context.Context, searchFIO, searchTabNum string) ([]*entity.Performer, error)
 	Upd(ctx context.Context, id int, performer *entity.Performer) error
 	FindById(ctx context.Context, id int) (*entity.Performer, error)
 }
@@ -81,9 +81,9 @@ func (p *PerformerRepo) FindByTabNum(ctx context.Context, tabNum int) (*entity.P
 	return &performer, nil
 }
 
-// All выводит список сотрудников.
-func (p *PerformerRepo) All(ctx context.Context) ([]*entity.Performer, error) {
-	rows, err := p.mssql.QueryContext(ctx, svPerformerAllQuery)
+// AllWithParam выводит список сотрудников с параметрами.
+func (p *PerformerRepo) AllWithParam(ctx context.Context, searchFIO, searchTabNum string) ([]*entity.Performer, error) {
+	rows, err := p.mssql.QueryContext(ctx, svPerformerAllQuery, searchFIO, searchTabNum)
 	if err != nil {
 		p.logg.LogE(msg.ERS500, err, logg.SkipNofS)
 

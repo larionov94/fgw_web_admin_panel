@@ -57,7 +57,10 @@ func (p *PerformerHandler) ShowPerformersPage(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	performers, err := p.performerService.AllPerformers(r.Context())
+	paramFIO := r.URL.Query().Get("fio")
+	paramTabNum := r.URL.Query().Get("tabNum")
+
+	performers, err := p.performerService.AllPerformersWithParam(r.Context(), paramFIO, paramTabNum)
 	if err != nil {
 		page.RenderPageError(w, r, page.ErrorPage{
 			MsgCode:    msg.EH5007,
@@ -84,6 +87,10 @@ func (p *PerformerHandler) ShowPerformersPage(w http.ResponseWriter, r *http.Req
 		CurrentPage:    pagePerformerPanel,
 		InfoPerformer:  performerData,
 		PerformersList: performers,
+		SearchByPerformer: &page.SearchByPerformersPage{
+			FIO:    paramFIO,
+			TabNum: paramTabNum,
+		},
 	})
 
 	page.RenderPages(w, r, tmplStartPageHTML, data, tmplPerformerHTML, tmplPerformerUpdHTML)

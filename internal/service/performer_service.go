@@ -6,6 +6,7 @@ import (
 	"fgw_web_admin_panel/internal/repository"
 	"fgw_web_admin_panel/pkg/logg"
 	"fgw_web_admin_panel/pkg/msg"
+	"strings"
 )
 
 type PerformerService struct {
@@ -20,7 +21,7 @@ func NewPerformerService(performerRepo repository.PerformerRepository, logg *log
 type PerformerUseCase interface {
 	AuthPerformerWithData(ctx context.Context, tabNum int, passwd string) (*entity.PerformerAuth, error)
 	FindPerformerByTabNum(ctx context.Context, tabNum int) (*entity.Performer, error)
-	AllPerformers(ctx context.Context) ([]*entity.Performer, error)
+	AllPerformersWithParam(ctx context.Context, searchFIO, searchTabNum string) ([]*entity.Performer, error)
 	UpdPerformer(ctx context.Context, id int, performer *entity.Performer) error
 	FindPerformerById(ctx context.Context, id int) (*entity.Performer, error)
 }
@@ -73,9 +74,12 @@ func (p *PerformerService) FindPerformerByTabNum(ctx context.Context, tabNum int
 	return performer, nil
 }
 
-// AllPerformers получает список сотрудников.
-func (p *PerformerService) AllPerformers(ctx context.Context) ([]*entity.Performer, error) {
-	performers, err := p.performerRepo.All(ctx)
+// AllPerformersWithParam получает список сотрудников с параметрами.
+func (p *PerformerService) AllPerformersWithParam(ctx context.Context, searchFIO, searchTabNum string) ([]*entity.Performer, error) {
+	searchFIO = strings.TrimSpace(searchFIO)
+	searchTabNum = strings.TrimSpace(searchTabNum)
+
+	performers, err := p.performerRepo.AllWithParam(ctx, searchFIO, searchTabNum)
 	if err != nil {
 		p.logg.LogE(msg.ESR502, err, logg.SkipNofS)
 

@@ -1,9 +1,81 @@
 {{ define "performers_content" }}
 
+{{ $searchField := .Page.SearchByPerformer }}
 
 <div class="d-flex justify-content-between align-items-center mt-2">
     <h1 class="h4 mb-3">{{ .Page.Title }}</h1>
 </div>
+
+<!-- Блок поиска всегда отображается -->
+<div class="search-container mb-3">
+    <form method="GET" action="/admin/performers" class="row g-2" id="searchForm">
+        <div class="col-auto">
+
+            <!-- Поиск по ФИО -->
+            <label for="searchFIO" style="position: relative; display: inline-block;">
+                <input type="text"
+                       name="fio"
+                       id="searchFIO"
+                       class="form-control form-control-sm"
+                       style="width: 45ch; padding-right: 15px;"
+                       placeholder="Поиск по ФИО..."
+                       value="{{ $searchField.FIO }}"
+                       autocomplete="off"
+                       maxlength="45">
+
+                {{if $searchField.FIO }}
+                <span id="clearSearchIconFIO"
+                      style="position: absolute;
+                      right: 8px;
+                      top: 50%;
+                      transform: translateY(-50%);
+                      cursor: pointer;
+                      color: #999;
+                      font-size: 14px;">
+                   ✗
+                </span>
+                {{end}}
+            </label>
+
+            <!-- Поиск по табельному номеру -->
+            <label for="searchTabNum" style="position: relative; display: inline-block;">
+                <input type="text"
+                       name="tabNum"
+                       id="searchTabNum"
+                       class="form-control form-control-sm"
+                       style="width: 15ch; padding-right: 15px;"
+                       placeholder="Поиск по ТН..."
+                       value="{{ $searchField.TabNum }}"
+                       autocomplete="off"
+                       maxlength="25">
+
+                {{if $searchField.TabNum }}
+                <span id="clearSearchIconTabNum"
+                      style="position: absolute;
+                      right: 8px;
+                       top: 50%;
+                       transform: translateY(-50%);
+                       cursor: pointer;
+                       color: #999;
+                       font-size: 14px;">
+                    ✗
+                </span>
+                {{end}}
+            </label>
+
+        </div>
+    </form>
+
+    <div class="alert {{ if eq (len .Page.PerformersList) 0 }}alert-warning{{ else }}alert-info{{ end }} mt-2 py-1 px-3">
+        <i class="bi bi-{{ if eq (len .Page.PerformersList) 0 }}exclamation-triangle{{ else }}info-circle{{ end }}"></i>
+        {{ if eq (len .Page.PerformersList) 0 }}
+        По запросу ничего не найдено
+        {{ else }}
+        По запросу найдено: {{ len .Page.PerformersList }} вариантов упаковки
+        {{ end }}
+    </div>
+</div>
+
 
 <div class="card shadow">
     <div class="card-body p-0">
@@ -79,6 +151,11 @@
             </div>
         </div>
     </div>
+</div>
+
+<div class="alert {{ if eq (len .Page.PerformersList) 0 }}alert-warning{{ else }}alert-info{{ end }} mt-2 py-1 px-3">
+    <i class="bi bi-{{ if eq (len .Page.PerformersList) 0 }}exclamation-triangle{{ else }}info-circle{{ end }}"></i>
+    Всего: {{ len .Page.PerformersList }}
 </div>
 
 {{ end }}
